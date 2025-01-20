@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Me - Spiral Navigation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: black;
+            min-height: 100vh;
+            display: flex;
+            font-family: "Courier New", monospace;
+            overflow-x: hidden;
+        }
+        
+        .main-container {
+            display: flex;
+            width: 100%;
+            position: relative;
+            padding-left: 320px;
+            /* Added padding to prevent content overlap */
+        }
+        
+        .spiral-nav {
+            position: fixed;
+            top: 50%;
+            left: 160px;
+            /* Adjusted left position */
+            width: 80px;
+            height: 80px;
+            transform: translateY(-50%);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .spiral {
+            width: 100%;
+            height: 100%;
+            animation: spin 8s linear infinite;
+        }
+        
+        .nav-links {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 320px;
+            /* Increased width */
+            height: 320px;
+            /* Increased height */
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .nav-link {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            color: #ff4500;
+            text-decoration: none;
+            font-size: 0.9em;
+            padding: 6px 12px;
+            border: 2px solid #ff4500;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.8);
+            white-space: nowrap;
+            z-index: 100;
+        }
+        
+        .nav-link:hover {
+            background: #ff4500;
+            color: black;
+        }
+        
+        .about-content {
+            flex: 1;
+            padding: 40px;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        
+        .content-columns {
+            display: none;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            max-width: 1200px;
+            color: #ff4500;
+            opacity: 0;
+            margin: 0 auto;
+        }
+        
+        .column {
+            padding: 20px;
+            border-left: 2px solid #ff4500;
+            position: relative;
+        }
+        
+        .typing-text {
+            overflow: hidden;
+            white-space: pre-wrap;
+            margin: 0;
+            border-right: 2px solid #ff4500;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+            line-height: 1.6;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes typing {
+            from {
+                width: 0
+            }
+            to {
+                width: 100%
+            }
+        }
+        
+        @keyframes blink-caret {
+            from,
+            to {
+                border-color: transparent
+            }
+            50% {
+                border-color: #ff4500
+            }
+        }
+        
+        .show-links {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .show-content {
+            opacity: 1;
+            display: grid;
+        }
+        
+        .paused {
+            animation-play-state: paused;
+        }
+        
+        .spiral-about {
+            position: absolute;
+            top: 75%;
+            left: 93%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+        }
+        
+        .transform-spiral {
+            animation: transform-to-lines 1s forwards;
+        }
+        
+        @keyframes transform-to-lines {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(90deg) scaleY(0);
+            }
+        }
+        /* Updated responsive layout */
+        
+        @media (max-width: 1024px) {
+            .main-container {
+                padding-left: 240px;
+            }
+            .spiral-nav {
+                left: 120px;
+            }
+            .content-columns {
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                padding-left: 100px;
+            }
+            .spiral-nav {
+                left: 50px;
+                width: 60px;
+                height: 60px;
+            }
+            .nav-links {
+                width: 240px;
+                height: 240px;
+            }
+            .content-columns {
+                grid-template-columns: 1fr;
+            }
+            .nav-link {
+                font-size: 0.8em;
+                padding: 4px 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="spiral-nav" id="spiralContainer">
+            <svg class="spiral" viewBox="-100 -100 200 200">
+                <path id="spiral" fill="none" stroke="#ff4500" stroke-width="2"></path>
+            </svg>
+            <div class="nav-links" id="navLinks">
+                <a href="spiral.html" class="nav-link" style="top: 0%; left: 50%;">Home</a>
+                <a href="projectpage.html" class="nav-link" style="top: 25%; left: 85%;">Projects</a>
+                <div class="spiral-about" id="aboutSpiral">
+                    <svg class="spiral" viewBox="-100 -100 200 200">
+                        <path id="aboutSpiralPath" fill="none" stroke="#ff4500" stroke-width="2"></path>
+                    </svg>
+                </div>
+                <a href="https://github.com/ShayanKhanJaved" class="nav-link" style="top: 100%; left: 50%;">Github</a>
+                <a href="https://www.linkedin.com/in/shayan-khan-javed-0a3190315/?trk=opento_sprofile_goalscard" class="nav-link" style="top: 75%; left: 15%;">LinkedIn</a>
+                <a href="https://www.instagram.com/shayan_khan_javed/" class="nav-link" style="top: 25%; left: 15%;">Instagram</a>
+            </div>
+        </div>
+
+        <div class="about-content" id="aboutContent">
+            <div class="content-columns" id="contentColumns">
+                <div class="column">
+                    <div class="typing-text" id="column1">
+                        About Me <br> I am a passionate developer and creative thinker with a deep interest in building innovative solutions. My journey in technology began with a curiosity about how things work, which evolved into a career in software
+                        development. Skills & Expertise: - Full Stack Development - UI/UX Design - Problem Solving - Algorithm Design - Data Structures
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="typing-text" id="column2">
+                        Projects <br> I've worked on various projects that showcase my abilities: - Chat Nest: Real-time communication platform - Disposable Groupchat: Temporary chat rooms - Private Space Searcher: Privacy-focused tool - SAT Planner:
+                        Educational planning system - STEM NEST: Learning management platform I'm always eager to learn and take on new challenges in the tech world.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateSpiral() {
+            const spirals = [
+                document.getElementById('spiral'),
+                document.getElementById('aboutSpiralPath')
+            ];
+
+            spirals.forEach(spiralPath => {
+                let path = 'M 90 0';
+                const turns = 8;
+                const points = 300;
+
+                for (let i = 0; i <= points; i++) {
+                    const t = (i / points) * turns * Math.PI * 2;
+                    const scale = 90;
+                    const r = scale * (1 - (i / points));
+                    const x = r * Math.cos(t);
+                    const y = r * Math.sin(t);
+                    path += ` L ${x} ${y}`;
+                }
+
+                spiralPath.setAttribute('d', path);
+            });
+        }
+
+        generateSpiral();
+
+        const spiralContainer = document.getElementById('spiralContainer');
+        const spiral = spiralContainer.querySelector('.spiral');
+        const navLinks = document.getElementById('navLinks');
+        const aboutSpiral = document.getElementById('aboutSpiral');
+        const aboutContent = document.getElementById('aboutContent');
+        const contentColumns = document.getElementById('contentColumns');
+
+        let navVisible = false;
+
+        function toggleMainSpiral(show) {
+            if (show) {
+                spiral.classList.add('paused');
+                navLinks.classList.add('show-links');
+                navVisible = true;
+            } else if (!navVisible) {
+                spiral.classList.remove('paused');
+                navLinks.classList.remove('show-links');
+            }
+        }
+
+        function showAboutContent() {
+            aboutSpiral.querySelector('.spiral').classList.add('transform-spiral');
+            setTimeout(() => {
+                aboutContent.style.opacity = '1';
+                contentColumns.style.display = 'grid';
+                setTimeout(() => {
+                    contentColumns.classList.add('show-content');
+                }, 100);
+            }, 1000);
+        }
+
+        spiralContainer.addEventListener('click', () => {
+            navVisible = !navVisible;
+            toggleMainSpiral(navVisible);
+        });
+
+        spiralContainer.addEventListener('mouseenter', () => toggleMainSpiral(true));
+        spiralContainer.addEventListener('mouseleave', (e) => {
+            if (!navVisible) {
+                toggleMainSpiral(false);
+            }
+        });
+
+        spiralContainer.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            toggleMainSpiral(true);
+        });
+
+        aboutSpiral.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showAboutContent();
+        });
+
+        aboutSpiral.addEventListener('mouseenter', (e) => {
+            e.stopPropagation();
+            showAboutContent();
+        });
+
+        aboutSpiral.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showAboutContent();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!spiralContainer.contains(e.target) && navVisible) {
+                navVisible = false;
+                toggleMainSpiral(false);
+            }
+        });
+    </script>
+</body>
+
+</html>
