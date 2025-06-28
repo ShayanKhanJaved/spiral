@@ -1,351 +1,1760 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Me - Spiral Navigation</title>
+    <title>CAMEOSKY Terminal</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background: black;
             min-height: 100vh;
-            display: flex;
-            font-family: "Courier New", monospace;
-            overflow-x: hidden;
+            font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+            overflow: hidden;
+            position: relative;
+            background-color: rgb(0, 0, 0);
         }
-        
+
         .main-container {
             display: flex;
             width: 100%;
             position: relative;
-            padding-left: 320px;
-            /* Added padding to prevent content overlap */
+            z-index: 10;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
         }
-        
+
         .spiral-nav {
             position: fixed;
             top: 50%;
-            left: 160px;
-            /* Adjusted left position */
+            left: 90px;
             width: 80px;
             height: 80px;
             transform: translateY(-50%);
             z-index: 1000;
             transition: transform 0.3s ease;
+            cursor: pointer;
         }
-        
+
         .spiral {
             width: 100%;
             height: 100%;
             animation: spin 8s linear infinite;
+            filter: drop-shadow(0 0 10px #ff4500);
         }
-        
+
+        .spiral-nav:hover .spiral,
+        .spiral-about:hover .spiral,
+        .spiral.paused {
+            animation-play-state: paused;
+        }
+
+        .spiral path {
+            stroke: #ff4500;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+        }
+
         .nav-links {
-            position: absolute;
+            position: fixed;
             top: 50%;
-            left: 50%;
-            width: 320px;
-            /* Increased width */
-            height: 320px;
-            /* Increased height */
+            left: 90px;
+            width: 400px;
+            height: 400px;
             transform: translate(-50%, -50%);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.5s ease;
+            z-index: 999;
         }
-        
+
+        .nav-links.show-links {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .nav-link {
             position: absolute;
             transform: translate(-50%, -50%);
             color: #ff4500;
             text-decoration: none;
             font-size: 0.9em;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border: 2px solid #ff4500;
             border-radius: 25px;
             transition: all 0.3s ease;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(255, 69, 0, 0.1);
+            backdrop-filter: blur(10px);
             white-space: nowrap;
             z-index: 100;
         }
-        
+
         .nav-link:hover {
-            background: #ff4500;
-            color: black;
+            background: rgba(255, 69, 0, 0.8);
+            color: rgb(255, 255, 255);
+            box-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
+            transform: translate(-50%, -50%) scale(1.1);
         }
-        
-        .about-content {
-            flex: 1;
-            padding: 40px;
-            opacity: 0;
-            transition: opacity 1s ease;
-        }
-        
-        .content-columns {
-            display: none;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 40px;
-            max-width: 1200px;
-            color: #ff4500;
-            opacity: 0;
-            margin: 0 auto;
-        }
-        
-        .column {
-            padding: 20px;
-            border-left: 2px solid #ff4500;
-            position: relative;
-        }
-        
-        .typing-text {
-            overflow: hidden;
-            white-space: pre-wrap;
-            margin: 0;
-            border-right: 2px solid #ff4500;
-            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
-            line-height: 1.6;
-        }
-        
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
-        @keyframes typing {
-            from {
-                width: 0
-            }
-            to {
-                width: 100%
-            }
-        }
-        
-        @keyframes blink-caret {
-            from,
-            to {
-                border-color: transparent
-            }
-            50% {
-                border-color: #ff4500
-            }
-        }
-        
-        .show-links {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        .show-content {
-            opacity: 1;
-            display: grid;
-        }
-        
-        .paused {
-            animation-play-state: paused;
-        }
-        
+
         .spiral-about {
             position: absolute;
             top: 75%;
-            left: 93%;
-            width: 40px;
-            height: 40px;
+            left: 85%;
+            width: 50px;
+            height: 50px;
             cursor: pointer;
             transform: translate(-50%, -50%);
+            z-index: 101;
+        }
+
+        .about-content {
+            flex: 1;
+            padding: 40px 20px;
+            opacity: 1;
+            pointer-events: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .terminal-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 700px;
+            margin: 0 auto;
+            background: rgba(255, 69, 0, 0.05);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(255, 69, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 69, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.1s ease-in-out;
+        }
+
+        .terminal-container.shake {
+            animation: screen-shake 0.3s;
+        }
+
+        .terminal-header {
+            background: rgba(255, 69, 0, 0.1);
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255, 69, 0, 0.2);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
-        .transform-spiral {
-            animation: transform-to-lines 1s forwards;
+        #header-logo-container {
+            width: 20px;
+            height: 20px;
+        }
+
+        .terminal-title { color: #ff4500; font-size: 0.9em; font-weight: 500; text-align: center;}
+
+        .terminal-body {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            color: rgb(255, 255, 255);
+            font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            overflow-y: auto;
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .terminal-body::-webkit-scrollbar { width: 12px; }
+        .terminal-body::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-radius: 6px; }
+        .terminal-body::-webkit-scrollbar-thumb { background: #ff4500; border-radius: 6px; border: 2px solid rgba(0, 0, 0, 0.3); }
+        .terminal-body::-webkit-scrollbar-thumb:hover { background: #ff6500; }
+        .terminal-body { scrollbar-width: thin; scrollbar-color: #ff4500 rgba(0, 0, 0, 0.3); }
+
+        .terminal-content { display: block; height: 100%; }
+
+        .terminal-intro-grid {
+            display: flex;
+            gap: 20px;
+            border-bottom: 1px solid rgba(255, 69, 0, 0.3);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .ascii-art-animation {
+            color: #ff4500;
+            font-size: 12px;
+            line-height: 0.85;
+            font-family: monospace;
+            white-space: pre;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .intro-details { flex-grow: 1; }
+        .retro-title { color: #ff4500; font-family: monospace; white-space: pre; font-size: 16px; margin-bottom: 10px; }
+        .intro-text { color: #e0e0e0; font-size: 0.95em; line-height: 1.5; }
+        .intro-text strong { color: #ff4500; }
+
+        #command-history { margin-bottom: 10px; }
+        .terminal-line { margin: 10px 0; display: flex; flex-wrap: wrap; }
+        .prompt { color: #ff4500; margin-right: 8px; font-weight: bold; white-space: nowrap; }
+        .command { color: rgb(255, 255, 255); }
+        .output { color: #c7c7c7; white-space: pre-wrap; margin-top: 5px; }
+        .python-output { color: #e0e0e0; white-space: pre; font-family: monospace; }
+        .python-error { color: #ff6347; white-space: pre-wrap; }
+        .ai-response { color: #66ff66; white-space: pre-wrap; margin-top: 5px; border-left: 2px solid #66ff66; padding-left: 10px;}
+
+        #command-input-line { display: flex; }
+        #command-input { color: #ffffff; background: transparent; border: none; outline: none; flex-grow: 1; caret-color: #ff4500; }
+        .typing-cursor { animation: blink 1s infinite; background-color: #ff4500; display: inline-block; width: 8px; height: 1.2em; margin-left: 2px; vertical-align: text-bottom; opacity: 1 !important; }
+
+        .terminal-link { color: #ff4500; text-decoration: none; padding: 2px 6px; border: 1px solid #ff4500; border-radius: 4px; margin: 2px; display: inline-block; transition: all 0.3s ease; background: rgba(255, 69, 0, 0.1); }
+        .terminal-link:hover { background: rgba(255, 69, 0, 0.8); color: white; box-shadow: 0 0 10px rgba(255, 69, 0, 0.5); }
+
+        #game-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #ff4500; font-family: 'Courier New', Courier, monospace; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 10px; user-select: none;
+        }
+        #game-screen { white-space: pre; font-size: 16px; line-height: 1; text-align: center; border: 2px solid #ff4500; padding: 10px; background: rgba(255, 69, 0, 0.05); box-shadow: inset 0 0 15px rgba(255, 69, 0, 0.4); }
+        #game-stats { margin-top: 10px; font-size: 16px; width: 100%; max-width: 800px; text-align: center; padding: 0 10px; display: flex; justify-content: space-between; flex-wrap: wrap; }
+        #game-controls { margin-top: 10px; font-size: 14px; color: #c7c7c7; width: 100%; max-width: 800px; text-align: center; }
+        
+        .player { font-weight: bold; color: white; text-shadow: 0 0 5px white;}
+        .mothership { font-weight: bold; color: #00ffff; text-shadow: 0 0 8px #00ffff; }
+        .enemy { font-weight: bold; color: #ff8c66; text-shadow: 0 0 5px #ff8c66; }
+        .enemy-tank { font-weight: bold; color: #ff6347; text-shadow: 0 0 6px #ff6347; }
+        .enemy-fast { font-weight: bold; color: #f0e68c; text-shadow: 0 0 5px #f0e68c; }
+        .boss { font-weight: bold; color: #ff0000; text-shadow: 0 0 8px #ff0000;}
+        .boss-health-bar { color: #ff0000; background-color: #555; }
+        .bullet { color: #fff; font-weight: bold; }
+        .enemy-bullet { color: #ff6347; font-weight: bold; }
+        .boss-bullet { color: #ff00ff; text-shadow: 0 0 5px #ff00ff; }
+        .explosion { color: #ff4500; animation: explosion-fade 0.3s forwards; }
+        .powerup { font-weight: bold; animation: powerup-glow 1.5s infinite alternate; }
+        .powerup-shield { color: #00ffff; text-shadow: 0 0 8px #00ffff; }
+        .powerup-rapid { color: #ffff00; text-shadow: 0 0 8px #ffff00; }
+        .powerup-health { color: #32cd32; text-shadow: 0 0 8px #32cd32; }
+        .powerup-bomb { color: #ff4500; text-shadow: 0 0 8px #ff4500; }
+        .powerup-mothership { color: #00ffff; text-shadow: 0 0 8px #00ffff; }
+
+        .chat-message { margin: 5px 0; line-height: 1.3; }
+        .chat-message-number { color: #ff4500; font-size: 0.9em; margin-right: 8px; display: inline-block; width: 30px; text-align: right; }
+        .chat-message-time { color: #ff8c00; font-size: 0.8em; margin-right: 8px; }
+        .chat-message-user { color: #66ff66; font-weight: bold; }
+        .chat-message-text { color: #e0e0e0; }
+        .chat-reply-context { color: #a0a0a0; font-style: italic; }
+        .auth-prompt { color: #66ff66; margin-top: 5px; }
+        .auth-success { color: #66ff66; }
+        .auth-error { color: #ff6347; }
+        .secret-prompt { color: #ff4500; filter: blur(3px); transition: all 0.3s; }
+        .secret-prompt:hover { filter: blur(0); }
+
+        /* --- KNOWLEDGE MAP V4 STYLES (ENHANCED) --- */
+        #search-view-container {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+        #knowledge-map-display {
+            display: flex;
+            height: calc(100% - 50px);
+            width: 100%;
+            gap: 10px;
+        }
+        #map-grid-container {
+            flex: 2;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            align-content: start;
+            padding-right: 10px;
+        }
+        #map-grid-container::-webkit-scrollbar { width: 8px; }
+        #map-grid-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
+        #map-grid-container::-webkit-scrollbar-thumb { background: #ff4500; }
+        
+        .map-node-retro {
+            color: white;
+            border: 1px solid #ff4500;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: pre;
+            font-size: 0.85em;
+            line-height: 1.3;
+            overflow: hidden;
+            background: rgba(255, 69, 0, 0.05);
+        }
+        .map-node-retro:hover {
+            background: rgba(255, 69, 0, 0.2);
+            color: #ff4500;
+        }
+        .map-node-retro.active-node {
+            background: rgba(255, 69, 0, 0.3);
+            border-color: #ffae42;
+            color: white;
+            box-shadow: inset 0 0 10px rgba(255, 69, 0, 0.5);
+        }
+        .map-node-retro.highlighted-node {
+            border-color: #fff;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+            transform: scale(1.05);
+            z-index: 10;
+            position: relative;
+        }
+        .node-title { font-weight: bold; color: #ff4500; }
+        .node-connector { color: #c7c7c7; }
+        
+        #map-info-panel {
+            flex: 1;
+            border: 1px solid #ff4500;
+            padding: 15px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        #map-info-panel::-webkit-scrollbar { width: 8px; }
+        #map-info-panel::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
+        #map-info-panel::-webkit-scrollbar-thumb { background: #ff4500; }
+        .info-title {
+            color: #ff4500;
+            font-weight: bold;
+            font-size: 1.2em;
+            border-bottom: 1px solid #ff4500;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .info-summary {
+            color: #e0e0e0;
+            font-size: 0.9em;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        .info-summary .topic-link {
+            color: #ff8c00;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .info-summary .topic-link:hover {
+            color: #ffae42;
+        }
+
+        .image-container {
+            position: relative;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .theme-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            filter: grayscale(1) sepia(1) hue-rotate(-30deg) saturate(5); /* Orange filter */
         }
         
-        @keyframes transform-to-lines {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(90deg) scaleY(0);
-            }
+        #search-controls {
+            flex-shrink: 0;
+            height: 50px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 1em;
+            color: #c7c7c7;
+            border-top: 1px solid rgba(255, 69, 0, 0.2);
         }
-        /* Updated responsive layout */
-        
-        @media (max-width: 1024px) {
-            .main-container {
-                padding-left: 240px;
-            }
-            .spiral-nav {
-                left: 120px;
-            }
-            .content-columns {
-                gap: 20px;
-            }
+
+        #knowledge-search-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #ff4500;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: "JetBrains Mono", monospace;
+            width: 50%;
+            text-align: center;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+        #knowledge-search-input::placeholder { color: #888; }
+        #knowledge-search-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+        }
+
+        .search-nav-btn {
+            background: rgba(255, 69, 0, 0.1);
+            border: 1px solid #ff4500;
+            color: #ff4500;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: "JetBrains Mono", monospace;
+        }
+        .search-nav-btn:hover:not(:disabled) {
+            background: rgba(255, 69, 0, 0.3);
+            color: white;
+        }
+        .search-nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
         
+        @keyframes explosion-fade { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.5); } }
+        @keyframes powerup-glow { from { opacity: 0.7; transform: scale(1); } to { opacity: 1; transform: scale(1.1); } }
+        @keyframes screen-shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } 20%, 40%, 60%, 80% { transform: translateX(5px); } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
         @media (max-width: 768px) {
-            .main-container {
-                padding-left: 100px;
-            }
-            .spiral-nav {
-                left: 50px;
-                width: 60px;
-                height: 60px;
-            }
-            .nav-links {
-                width: 240px;
-                height: 240px;
-            }
-            .content-columns {
-                grid-template-columns: 1fr;
-            }
-            .nav-link {
-                font-size: 0.8em;
-                padding: 4px 8px;
-            }
+            .main-container { padding-left: 20px; padding-top: 100px; flex-direction: column; }
+            .spiral-nav { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 50px; height: 50px; z-index: 2000; }
+            .nav-links { top: 20px; left: 50%; transform: translate(-50%, 0); width: 300px; height: 100px; z-index: 1999; }
+            .about-content { padding: 20px 10px; margin-top: 70px; }
+            .terminal-container { max-width: 95%; height: 75vh; max-height: 600px; }
+            .terminal-intro-grid { flex-direction: column; gap: 10px; }
+            .ascii-art-animation { font-size: 8px; align-self: center; }
+            .terminal-body { font-size: 12px; }
+            .retro-title { font-size: 12px; }
+            .intro-text { font-size: 0.85em; }
+            .spiral-about { position: absolute; top: 50%; left: 80%; width: 40px; height: 40px; }
+            #game-screen { font-size: 12px; }
+            #game-stats { font-size: 12px; }
+            #knowledge-map-display { flex-direction: column; }
+            #map-info-panel { flex: 0.5; max-height: 200px; }
+        }
+
+        @media (max-width: 480px) {
+            .terminal-container { height: 70vh; max-height: 500px; }
+            .spiral-nav { width: 40px; height: 40px; }
+            .nav-links { width: 250px; height: 80px; }
+            .nav-link { font-size: 0.8em; padding: 6px 12px; }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 </head>
 
 <body>
     <div class="main-container">
         <div class="spiral-nav" id="spiralContainer">
-            <svg class="spiral" viewBox="-100 -100 200 200">
+             <svg class="spiral" viewBox="-50 -50 100 100">
                 <path id="spiral" fill="none" stroke="#ff4500" stroke-width="2"></path>
             </svg>
             <div class="nav-links" id="navLinks">
-                <a href="spiral.html" class="nav-link" style="top: 0%; left: 50%;">Home</a>
-                <a href="projectpage.html" class="nav-link" style="top: 25%; left: 85%;">Projects</a>
-                <div class="spiral-about" id="aboutSpiral">
-                    <svg class="spiral" viewBox="-100 -100 200 200">
+                <a href="spiral.html" class="nav-link" style="top: 20%; left: 80%;">Home</a>
+                <div class="spiral-about" id="aboutSpiral" style="top: 50%; left: 80%;">
+                    <svg class="spiral" viewBox="-50 -50 100 100">
                         <path id="aboutSpiralPath" fill="none" stroke="#ff4500" stroke-width="2"></path>
                     </svg>
                 </div>
-                <a href="https://github.com/ShayanKhanJaved" class="nav-link" style="top: 100%; left: 50%;">Github</a>
-                <a href="https://www.linkedin.com/in/shayan-khan-javed-0a3190315/?trk=opento_sprofile_goalscard" class="nav-link" style="top: 75%; left: 15%;">LinkedIn</a>
-                <a href="https://www.instagram.com/shayan_khan_javed/" class="nav-link" style="top: 25%; left: 15%;">Instagram</a>
+                <a href="#" class="nav-link" style="top: 80%; left: 80%;">Github</a>
             </div>
         </div>
 
-        <div class="about-content" id="aboutContent">
-            <div class="content-columns" id="contentColumns">
-                <div class="column">
-                    <div class="typing-text" id="column1">
-                        About Me <br> I am a passionate developer and creative thinker with a deep interest in building innovative solutions. My journey in technology began with a curiosity about how things work, which evolved into a career in software
-                        development. Skills & Expertise: - Full Stack Development - UI/UX Design - Problem Solving - Algorithm Design - Data Structures
+        <div class="about-content show-content" id="aboutContent">
+            <div class="terminal-container" id="terminalContainer">
+                <div class="terminal-header">
+                    <div id="header-logo-container">
+                        <svg class="spiral" viewBox="-50 -50 100 100">
+                            <path id="headerSpiralPath" fill="none" stroke="#ff4500" stroke-width="4"></path>
+                        </svg>
                     </div>
+                    <div class="terminal-title" id="terminal-title">CAMEOSKY@arch-terminal</div>
                 </div>
-                <div class="column">
-                    <div class="typing-text" id="column2">
-                        Projects <br> I've worked on various projects that showcase my abilities: - Chat Nest: Real-time communication platform - Disposable Groupchat: Temporary chat rooms - Private Space Searcher: Privacy-focused tool - SAT Planner:
-                        Educational planning system - STEM NEST: Learning management platform I'm always eager to learn and take on new challenges in the tech world.
+
+                <div class="terminal-body" id="terminalBody">
+                    <div id="terminal-content">
+                        <div class="terminal-intro-grid">
+                            <div id="ascii-animation-container" class="ascii-art-animation"></div>
+                            <div class="intro-details">
+                                <pre class="retro-title">
+      ____                          ____  _
+     / ___|__ _ _ __ ___   ___  ___ / ___|| | ___   _
+    | |   / _` | '_ ` _ \ / _ \/ _ \\___ \| |/ / | | |
+    | |__| (_| | | | | | |  __/ (_) |___) |   <| |_| |
+     \____\__,_|_| |_| |_|\___|\___/|____/|_|\_\\__, |
+                                               |___/
+    <span style="color: #ffffff;">    ~ Welcome to CAMEOSKY terminal ~</span>
+                                </pre>
+                                <p class="intro-text">
+                                 I'm a passionate developer and creative thinker with a deep interest in building innovative, user-centric solutions. This terminal is a reflection of my love for retro-tech. Type <strong>help</strong> for a list of commands, or type <strong>play</strong> to start the game. Or type <strong>greyskin</strong> to access the secure chat channel (hidden).<br>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id="command-history"></div>
+                        <div class="terminal-line" id="command-input-line">
+                            <span class="prompt" id="terminal-prompt">[cameosky@arch ~]$</span>
+                            <input type="text" id="command-input" autocomplete="off" autofocus>
+                            <span class="typing-cursor"></span>
+                        </div>
+                    </div>
+
+                    <div id="game-container">
+                        <div id="game-screen"></div>
+                        <div id="game-stats"></div>
+                        <div id="game-controls"></div>
+                    </div>
+
+                    <div id="search-view-container">
+                        <div id="knowledge-map-display">
+                            <div id="map-grid-container"></div>
+                            <div id="map-info-panel"></div>
+                        </div>
+                         <div id="search-controls">
+                             <button id="search-back-btn" class="search-nav-btn" disabled>&lt; Back</button>
+                             <input type="text" id="knowledge-search-input" placeholder="Search another topic or 'quit' to exit...">
+                             <button id="search-forward-btn" class="search-nav-btn" disabled>Fwd &gt;</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <script type="module">
+        // Firebase project configuration.
+       const firebaseConfig = {
+          apiKey: "AIzaSyBnqLJxoaIjzpVUA9jXscDYrjED5yLhJmg",
+          authDomain: "greyskin-7e568.firebaseapp.com",
+          databaseURL: "https://greyskin-7e568-default-rtdb.firebaseio.com",
+          projectId: "greyskin-7e568",
+          storageBucket: "greyskin-7e568.firebasestorage.app",
+          messagingSenderId: "179377879369",
+          appId: "1:179377879369:web:071a8725d93163691f0298",
+          measurementId: "G-RHKB6D9XQL"
+        };
 
-    <script>
-        function generateSpiral() {
-            const spirals = [
-                document.getElementById('spiral'),
-                document.getElementById('aboutSpiralPath')
-            ];
 
-            spirals.forEach(spiralPath => {
-                let path = 'M 90 0';
-                const turns = 8;
-                const points = 300;
+        // Import Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            orderBy, 
+            onSnapshot,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-                for (let i = 0; i <= points; i++) {
-                    const t = (i / points) * turns * Math.PI * 2;
-                    const scale = 90;
-                    const r = scale * (1 - (i / points));
-                    const x = r * Math.cos(t);
-                    const y = r * Math.sin(t);
-                    path += ` L ${x} ${y}`;
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- GLOBAL ELEMENTS ---
+            const commandInput = document.getElementById('command-input');
+            const historyContainer = document.getElementById('command-history');
+            const terminalContainer = document.getElementById('terminalContainer');
+            const terminalBody = document.getElementById('terminalBody');
+            const terminalContent = document.getElementById('terminal-content');
+            const gameContainer = document.getElementById('game-container');
+            const spiralContainer = document.getElementById('spiralContainer');
+            const navLinks = document.getElementById('navLinks');
+            const terminalTitle = document.getElementById('terminal-title');
+            const terminalPrompt = document.getElementById('terminal-prompt');
+            const searchViewContainer = document.getElementById('search-view-container');
+            const mapGridContainer = document.getElementById('map-grid-container');
+            const mapInfoPanel = document.getElementById('map-info-panel');
+            const searchBackBtn = document.getElementById('search-back-btn');
+            const searchForwardBtn = document.getElementById('search-forward-btn');
+            const knowledgeSearchInput = document.getElementById('knowledge-search-input');
+
+
+            // --- STATE VARIABLES ---
+            let inGame = false;
+            let inChat = false;
+            let inAIMode = false;
+            let inSearchMode = false;
+            let currentUser = null;
+            let unsubscribeChat = null; 
+            let chatMessages = []; 
+            let activeIntervals = [];
+            let inPythonMode = false;
+            let pyodide = null;
+            let pyodideReady = false;
+            let pythonCodeBlock = '';
+
+            let authState = {
+                inProgress: false,
+                mode: null, 
+                step: 0, 
+                email: '',
+                password: ''
+            };
+            
+            // --- AUDIO ENGINE ---
+            const audio = (() => {
+                let audioCtx;
+                const init = () => {
+                    if (!audioCtx) {
+                        try {
+                            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        } catch (e) {
+                            console.warn('Web Audio API is not supported in this browser');
+                        }
+                    }
+                };
+
+                 const playSound = (type, freq, duration, finalFreq = freq, volume = 0.1) => {
+                    if (!audioCtx) return;
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    oscillator.type = type;
+                    gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+                    oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(finalFreq, audioCtx.currentTime + duration);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + duration);
+                };
+
+                return {
+                    init,
+                    delete: () => playSound('triangle', 600, 0.08, 600, 0.2),
+                    error: () => playSound('sawtooth', 120, 0.15, 100, 0.2),
+                    shoot: () => playSound('triangle', 880, 0.1, 440, 0.15),
+                    hit: () => playSound('square', 200, 0.1, 150, 0.2),
+                    explosion: () => playSound('sawtooth', 400, 0.4, 50, 0.3),
+                    levelUp: () => playSound('sine', 523, 0.5, 1046, 0.25),
+                    powerUp: () => playSound('sine', 600, 0.2, 1200, 0.2), 
+                    shieldDown: () => playSound('sawtooth', 300, 0.3, 100, 0.25), 
+                    bomb: () => playSound('sawtooth', 800, 0.8, 20, 0.4),
+                    bossHit: () => playSound('square', 100, 0.15, 80, 0.3),
+                    warning: () => playSound('sine', 880, 0.5, 880, 0.2),
+                    accessGranted: () => playSound('sine', 880, 0.3, 1760, 0.3),
+                    accessDenied: () => playSound('sawtooth', 100, 0.5, 50, 0.3),
+                    chatMessage: () => playSound('triangle', 523, 0.1, 659, 0.15)
+                };
+            })();
+
+            document.body.addEventListener('click', audio.init, { once: true });
+            document.body.addEventListener('keydown', audio.init, { once: true });
+
+            // --- SPIRAL NAVIGATION LOGIC ---
+            spiralContainer.addEventListener('mouseenter', () => navLinks.classList.add('show-links'));
+            spiralContainer.addEventListener('mouseleave', () => navLinks.classList.remove('show-links'));
+
+            function generateSpiralPaths() {
+                 const spirals = [
+                    document.getElementById('spiral'), 
+                    document.getElementById('aboutSpiralPath'),
+                    document.getElementById('headerSpiralPath')
+                ];
+                spirals.forEach(spiralPath => {
+                    if (!spiralPath) return;
+                    let path = 'M 40 0';
+                    const turns = 6; const points = 200;
+                    for (let i = 0; i <= points; i++) {
+                        const t = (i / points) * turns * Math.PI * 2;
+                        const r = 40 * (1 - (i / points) * 0.9);
+                        path += ` L ${(r * Math.cos(t)).toFixed(2)} ${(r * Math.sin(t)).toFixed(2)}`;
+                    }
+                    spiralPath.setAttribute('d', path);
+                });
+            }
+
+            // --- ASCII BINARY FLOW ANIMATION (Reused for Mascot) ---
+            function runAsciiAnimation(container, isMascot = false) {
+                const canvas = container;
+                if (!canvas) return;
+                
+                const width = isMascot ? 25 : 45; 
+                const height = isMascot ? 14 : 28;
+                let grid = []; 
+                let time = 0;
+
+                const initGrid = () => { grid = Array(height).fill().map(() => Array(width).fill(' ')); };
+                const render = () => { canvas.textContent = grid.map(row => row.join('')).join('\n'); };
+                
+                function update() {
+                    initGrid();
+                    const t = time * 0.02;
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            const dx = x - width / 2;
+                            const dy = y - height / 2;
+                            const flow = Math.sin(x * 0.2 + y * 0.1 + t) + Math.sin(Math.sqrt(dx * dx + dy * dy) * 0.4 - t * 2);
+                            if (flow > 0.8) grid[y][x] = '█';
+                            else if (flow > 0.4) grid[y][x] = '░';
+                            else if (flow > 0.0) grid[y][x] = '·';
+                            else if (flow < -0.8) grid[y][x] = '@';
+                            else if (flow < -0.4) grid[y][x] = '*';
+                            else if (flow < -0.0) grid[y][x] = '~';
+                        }
+                    }
+                    time++;
                 }
 
-                spiralPath.setAttribute('d', path);
+                function animate() {
+                    if (!document.body.contains(canvas)) {
+                        const intervalId = activeIntervals.find(i => i.canvas === canvas);
+                        if (intervalId) {
+                            clearInterval(intervalId.id);
+                            activeIntervals = activeIntervals.filter(i => i.canvas !== canvas);
+                        }
+                        return;
+                    }
+                    if(inGame && !isMascot) { requestAnimationFrame(animate); return; }; 
+                    update(); 
+                    render(); 
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            }
+            
+            // --- PYTHON INTEGRATION (PYODIDE) ---
+            async function loadPyodideAndInit() {
+                printOutput("Loading Python runtime... Please wait.", null);
+                try {
+                    pyodide = await loadPyodide();
+                    pyodideReady = true;
+                    printOutput("Python runtime ready. Type 'python' to enter the REPL.", true);
+                } catch (error) {
+                    pyodideReady = false;
+                    printOutput("Error loading Python runtime. Python features will be unavailable.", false);
+                    console.error("Pyodide loading error:", error);
+                }
+            }
+
+            async function runPythonCode(code) {
+                if (!pyodideReady) {
+                    printOutput("Python runtime is not available.", false);
+                    return;
+                }
+                let stdout_data = "";
+                let stderr_data = "";
+                const loadingMsg = document.createElement('div');
+                try {
+                    loadingMsg.className = 'output';
+                    loadingMsg.textContent = 'Analyzing imports and loading required packages...';
+                    historyContainer.appendChild(loadingMsg);
+                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                    pyodide.setStdout({ batched: (data) => { stdout_data += data + "\n"; } });
+                    pyodide.setStderr({ batched: (data) => { stderr_data += data + "\n"; } });
+                    await pyodide.loadPackagesFromImports(code);
+                    loadingMsg.textContent = 'Packages loaded. Executing code...';
+                    let result = await pyodide.runPythonAsync(code);
+                    loadingMsg.remove();
+                    if (stdout_data) printOutput(stdout_data.trimEnd(), null, 'python-output');
+                    if (stderr_data) printOutput(stderr_data.trimEnd(), false, 'python-error');
+                    if (result !== undefined) printOutput(String(result), null, 'python-output');
+                } catch (err) {
+                    if(loadingMsg) loadingMsg.remove();
+                    printOutput(String(err), false, 'python-error');
+                } finally {
+                    pyodide.setStdout({});
+                    pyodide.setStderr({});
+                }
+            }
+            
+            // --- AI GUIDE (GEMINI) ---
+            async function getAiResponse(prompt) {
+                const apiKey = "AIzaSyAQcjWKuKAywb24BbiozAT1O_3aUPWpJ6A"; 
+                if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY") {
+                    printOutput("AI Error: API key not set. Please add your key to the file to use the 'ask' command.", false);
+                    return;
+                }
+                const thinkingElement = document.createElement('div');
+                thinkingElement.className = 'output';
+                runMascotAnimation(thinkingElement, 'thinking');
+                historyContainer.appendChild(thinkingElement);
+                terminalBody.scrollTop = terminalBody.scrollHeight;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+                const payload = { contents: [{ role: "user", parts: [{ text: `You are an AI assistant inside a web-based terminal. Keep answers concise, helpful, and formatted for a terminal (use line breaks). The user asked: ${prompt}` }] }] };
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    clearAllIntervals();
+                    thinkingElement.remove();
+                    if (!response.ok) {
+                        const errorBody = await response.json();
+                        throw new Error(`API request failed: ${errorBody.error?.message || 'Unknown API error.'}`);
+                    }
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts[0].text) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        printOutput(text, null, 'ai-response');
+                    } else {
+                        throw new Error("Invalid response structure from AI. The response may be empty or blocked by safety settings.");
+                    }
+                } catch (error) {
+                    clearAllIntervals();
+                    thinkingElement.remove();
+                    printOutput(`Error contacting AI: ${error.message}`, false);
+                }
+            }
+            
+            // --- ANIMATION CLEANUP ---
+            function clearAllIntervals() {
+                activeIntervals.forEach(intervalId => clearInterval(intervalId.id));
+                activeIntervals = [];
+            }
+            
+            // --- SPIRAL MASCOT from intro animation ---
+            function runMascotAnimation(element, mode = 'idle', message = '') {
+                clearAllIntervals(); 
+                const canvas = document.createElement('pre');
+                canvas.style.fontSize = '10px';
+                canvas.style.lineHeight = '0.8';
+                element.innerHTML = '';
+                element.appendChild(canvas);
+
+                const width = 40, height = 15;
+                let grid = []; 
+                let time = 0;
+
+                const initGrid = () => { grid = Array(height).fill().map(() => Array(width).fill(' ')); };
+                const render = () => { canvas.textContent = grid.map(row => row.join('')).join('\n'); };
+                
+                function update() {
+                    initGrid();
+                    const t = time * 0.03;
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            const dx = x - width / 2;
+                            const dy = y - height / 2;
+                            const flow = Math.sin(x * 0.15 + y * 0.1 + t) + Math.sin(Math.sqrt(dx * dx + dy * dy) * 0.3 - t * 2);
+                            if (flow > 0.7) grid[y][x] = '█';
+                            else if (flow > 0.3) grid[y][x] = '░';
+                            else if (flow > 0.0) grid[y][x] = '·';
+                            else if (flow < -0.7) grid[y][x] = '#';
+                            else if (flow < -0.3) grid[y][x] = '*';
+                            else if (flow < -0.0) grid[y][x] = '~';
+                        }
+                    }
+                    time++;
+                }
+                
+                function updateNeofetch() {
+                     initGrid();
+                     const t = time * 0.05;
+                     for (let y = 0; y < height; y++) {
+                         for (let x = 0; x < width; x++) {
+                             const dx = x - width / 2;
+                             const dy = y - height / 2;
+                             const dist = Math.sqrt(dx*dx + dy*dy) * 0.4;
+                             const flow = Math.cos(dist - t) * Math.sin(x * 0.15 - t);
+                             if (flow > 0.7) grid[y][x] = '▓';
+                             else if (flow > 0.4) grid[y][x] = '▒';
+                             else if (flow > 0.1) grid[y][x] = '░';
+                             else if (flow < -0.7) grid[y][x] = '•';
+                             else if (flow < -0.4) grid[y][x] = '·';
+                             else grid[y][x] = ' ';
+                         }
+                     }
+                     time++;
+                }
+
+                if (mode === 'static' || mode === 'talking') {
+                    update();
+                    render();
+                    if (mode === 'talking' && message) {
+                        const msgElement = document.createElement('div');
+                        msgElement.textContent = `< ${message} >`;
+                        msgElement.style.marginTop = '5px';
+                        element.appendChild(msgElement);
+                    }
+                } else {
+                    const intervalId = setInterval(() => {
+                        if (mode === 'neofetch') {
+                             updateNeofetch();
+                        } else {
+                             update();
+                        }
+                        render();
+                    }, 80);
+                    activeIntervals.push({id: intervalId, canvas: canvas});
+                }
+            }
+
+
+            // --- VOID-STRIKER GAME ENGINE (UPGRADED V6) ---
+            const Game = {
+                display: null, statsDisplay: null, controlsDisplay: null, width: 70, height: 30, player: {}, bullets: [], enemies: [], explosions: [], powerUps: [], keys: {}, level: 1, score: 0, highScore: 0, enemySpawnCounter: 0, gameLoopInterval: null, isGameOver: false, boss: null, bossActive: false, screenShakeTimer: 0, levelIntroTimer: 0,
+                story: [
+                    { level: 1, text: "Sector 1: An unknown energy signature has been detected. Begin reconnaissance." },
+                    { level: 2, text: "Hostile ships detected! They're primitive, but numerous. Clear them out." },
+                    { level: 3, text: "!! WARNING: Large hostile approaching! This is a Sector Guardian. Destroy it!" },
+                    { level: 4, text: "Sector 2: You're in their main territory now. Expect heavy resistance." },
+                    { level: 5, text: "They're adapting... faster and more aggressive ships have been deployed." },
+                    { level: 6, text: "!! BOSS BATTLE: The 'Enforcer' drone is here. Its armor is thick, find a weak point!" },
+                    { level: 7, text: "Sector 3: The signal is getting stronger. You're entering the heart of the Void's influence." },
+                    { level: 8, text: "They're throwing everything they have at you. This is a suicide run. Hold the line!" },
+                    { level: 9, text: "!! FINAL BOSS: You've reached the source. The Cosmic Void itself. End this, pilot!" },
+                ],
+                bossTypes: [
+                    { name: 'Guardian', hp: 120, art: [ " >-A-< ", "<[O_O]>", " v-V-v " ], attackPatterns: [
+                        { type: 'spread', count: 3, damage: 10, cooldown: 90 },
+                        { type: 'spawn', enemyType: 'basic', count: 2, cooldown: 150 },
+                        { type: 'bombingRun', count: 4, damage: 15, cooldown: 180}
+                    ]},
+                    { name: 'Enforcer', hp: 250, art: [ "/|#|#|\\", "[|O-O|]", "\\|#|#|/" ], attackPatterns: [
+                        { type: 'barrage', damage: 15, cooldown: 80 },
+                        { type: 'spawn', enemyType: 'fast', count: 1, cooldown: 160 },
+                        { type: 'bombingRun', count: 6, damage: 20, cooldown: 140}
+                    ]},
+                     { name: 'Cosmic Void', hp: 500, art_frames: [[ "  ~ · ~  ", "· ~ █ ~ ·", "  ~ · ~  " ], [ "   * * ", "* ░ █ ░ *", "   * * " ], [ "  * · * ", "· ▒ █ ▒ ·", "  * · * " ], [ "   ~ ~   ", "~ ▓ █ ▓ ~", "   ~ ~   " ]], art: [], artFrame: 0, artUpdateCounter: 0, attackPatterns: [
+                        { type: 'spread', count: 5, damage: 20, cooldown: 60 },
+                        { type: 'spawn', enemyType: 'tank', count: 1, cooldown: 100 },
+                        { type: 'spawn', enemyType: 'fast', count: 2, cooldown: 100 },
+                        { type: 'bombingRun', count: 12, damage: 25, cooldown: 90 }
+                    ]}
+                ],
+                init: function() {
+                    this.display = document.getElementById('game-screen');
+                    this.statsDisplay = document.getElementById('game-stats');
+                    this.controlsDisplay = document.getElementById('game-controls');
+                    gameContainer.style.display = 'flex'; terminalContent.style.display = 'none';
+                    inGame = true; this.isGameOver = false; this.bossActive = false; this.boss = null;
+                    this.player = { x: this.width / 2, y: this.height - 3, char: '▲', hp: 100, shield: 50, rapidFire: 0, shootCooldown: 0, baseShootCooldown: 8, bombs: 2, mothershipTimer: 0, mothership: null };
+                    this.bullets = []; this.enemies = []; this.explosions = []; this.powerUps = [];
+                    this.level = 1; this.score = 0; this.enemySpawnCounter = 0;
+                    this.highScore = localStorage.getItem('voidStrikerHighScore') || 0;
+                    this.controlsDisplay.innerHTML = `Controls: [WASD]/[Arrows] Move | [Space] Shoot | [B] Bomb | [Q] Quit <br> High Score: ${this.highScore}`;
+                    this.showLevelIntro();
+                    this.gameLoopInterval = setInterval(() => this.gameLoop(), 50);
+                },
+                showLevelIntro: function() {
+                    const intro = this.story.find(s => s.level === this.level);
+                    if (intro) {
+                        this.levelIntroTimer = 80; 
+                        this.display.innerHTML = `\n\n\n\n\n\n\n<div style="color: #ff4500; font-size: 1.2em;">LEVEL ${this.level}</div>\n<div>${intro.text}</div>`;
+                    }
+                },
+                gameLoop: function() { 
+                    if (this.levelIntroTimer > 0) {
+                        this.levelIntroTimer--;
+                        return;
+                    }
+                    if (this.screenShakeTimer > 0) { this.screenShakeTimer--; if(this.screenShakeTimer === 0) terminalContainer.classList.remove('shake'); }
+                    if (!this.isGameOver) { this.update(); this.draw(); } 
+                },
+                shakeScreen: function(duration) { this.screenShakeTimer = duration; terminalContainer.classList.add('shake'); },
+                update: function() {
+                    if ((this.level % 3 === 0) && !this.bossActive && this.enemies.length === 0) {
+                        this.spawnBoss();
+                    }
+                    if (this.bossActive) this.updateBoss();
+                    if (this.keys['a'] || this.keys['ArrowLeft']) this.player.x = Math.max(1, this.player.x - 1);
+                    if (this.keys['d'] || this.keys['ArrowRight']) this.player.x = Math.min(this.width - 2, this.player.x + 1);
+                    if (this.keys['w'] || this.keys['ArrowUp']) this.player.y = Math.max(1, this.player.y - 1);
+                    if (this.keys['s'] || this.keys['ArrowDown']) this.player.y = Math.min(this.height - 2, this.player.y + 1);
+                    if (this.player.shootCooldown > 0) this.player.shootCooldown--;
+                    if (this.player.rapidFire > 0) this.player.rapidFire--;
+                    if (this.player.mothershipTimer > 0) {
+                        this.player.mothershipTimer--;
+                        if (this.player.mothershipTimer === 0) { this.player.mothership = null; }
+                        else { this.updateMothership(); }
+                    }
+                    if (this.keys[' '] && this.player.shootCooldown === 0) {
+                        const currentCooldown = this.player.rapidFire > 0 ? Math.floor(this.player.baseShootCooldown / 2) : this.player.baseShootCooldown;
+                        this.bullets.push({ x: this.player.x, y: this.player.y - 1, dy: -1, char: '|' });
+                        this.player.shootCooldown = currentCooldown; audio.shoot();
+                    }
+                    this.bullets.forEach(b => b.y += b.dy);
+                    this.bullets = this.bullets.filter(b => b.y > 0 && b.y < this.height - 1);
+                    this.powerUps.forEach(p => p.y++);
+                    this.powerUps = this.powerUps.filter(p => p.y < this.height);
+                    this.enemySpawnCounter++;
+                    if (!this.bossActive && this.enemySpawnCounter > (80 - this.level * 3)) {
+                        const x = Math.floor(Math.random() * (this.width - 2)) + 1; let hp = 1 + Math.floor(this.level / 3);
+                        const rand = Math.random() + this.level * 0.04; let type, char;
+                        if (rand > 1.05 && this.level >= 5) { type = 'tank'; hp = 3 + this.level; char = 'W'; }
+                        else if (rand > 0.75 && this.level >= 3) { type = 'fast'; hp = 1 + Math.floor(this.level/4); char = '>';}
+                        else if (rand > 0.4) { type = 'shooter'; char = '▼'; } else { type = 'basic'; char = 'V'; }
+                        this.enemies.push({ x, y: 0, hp, type, char, shootCooldown: Math.random() * 60 + 20, vx: type === 'fast' ? (Math.random() > 0.5 ? 0.4 : -0.4) : 0 });
+                        this.enemySpawnCounter = 0;
+                    }
+                    this.enemies.forEach(e => { e.y += 0.04 + this.level * 0.008; e.x += e.vx; if(e.x <= 1 || e.x >= this.width - 2) e.vx *= -1;
+                        if (e.type === 'shooter') { e.shootCooldown--; if (e.shootCooldown <= 0) { this.bullets.push({ x: e.x, y: e.y + 1, dy: 1, char: '!', isEnemy: true }); e.shootCooldown = 100 - this.level * 4; } }
+                    });
+                    for (let i = this.bullets.length - 1; i >= 0; i--) {
+                        const b = this.bullets[i]; if (b.isEnemy) continue;
+                        for (let j = this.enemies.length - 1; j >= 0; j--) { const e = this.enemies[j];
+                            if (Math.floor(b.x) === Math.floor(e.x) && Math.floor(b.y) === Math.floor(e.y)) { audio.hit(); e.hp--; this.bullets.splice(i, 1);
+                                if (e.hp <= 0) { this.createExplosion(e.x, e.y, 5); if(Math.random() < 0.35) this.spawnPowerUp(e.x, e.y); this.enemies.splice(j, 1); this.score += 10 * this.level * (e.type === 'tank' ? 3 : 1); audio.explosion(); } break;
+                            }
+                        }
+                    }
+                    const takeDamage = (amount) => { this.shakeScreen(6); if (this.player.shield > 0) { this.player.shield -= amount; if (this.player.shield <= 0) audio.shieldDown(); } else { this.player.hp -= amount; } };
+                    this.enemies.forEach(e => { if (Math.floor(e.x) === Math.floor(this.player.x) && Math.floor(e.y) === Math.floor(this.player.y)) { takeDamage(15); e.y = this.height; } });
+                     this.bullets.forEach(b => { if(b.isEnemy && Math.floor(b.x) === Math.floor(this.player.x) && Math.floor(b.y) === Math.floor(this.player.y)) { takeDamage(b.damage || 10); b.y = this.height; } });
+                    for (let i = this.powerUps.length - 1; i >= 0; i--) {
+                        const p = this.powerUps[i]; if (Math.floor(p.x) === Math.floor(this.player.x) && Math.floor(p.y) === Math.floor(this.player.y)) { audio.powerUp();
+                            if (p.type === 'shield') this.player.shield = Math.min(100, this.player.shield + 50); if (p.type === 'rapid') this.player.rapidFire = 300; if (p.type === 'health') this.player.hp = Math.min(100, this.player.hp + 25); if (p.type === 'bomb') this.player.bombs = Math.min(5, this.player.bombs + 1);
+                            if (p.type === 'mothership') { this.player.mothershipTimer = 600; this.player.mothership = { x: this.player.x, y: this.player.y + 1, char: '<=>', shootCooldown: 0 }; }
+                            this.powerUps.splice(i, 1); break;
+                        }
+                    }
+                    if (this.player.hp <= 0 || this.enemies.some(e => e.y >= this.height - 1)) { this.gameOver(); }
+                    this.explosions.forEach(ex => ex.lifetime--); this.explosions = this.explosions.filter(ex => ex.lifetime > 0);
+                    if (!this.bossActive && this.enemies.length === 0 && this.score > this.level * 400 * (this.level / 2)) {
+                        if (this.level < 9 && this.level % 3 !== 0) {
+                            this.level++; audio.levelUp(); this.showLevelIntro();
+                        }
+                    }
+                },
+                updateMothership: function() {
+                    const ship = this.player.mothership;
+                    if (!ship) return;
+                    ship.x += (this.player.x - ship.x) * 0.1;
+                    ship.y = this.player.y + 1;
+                    ship.shootCooldown--;
+                    if (ship.shootCooldown <= 0) {
+                        this.bullets.push({ x: ship.x, y: ship.y - 1, dy: -1, char: '^' });
+                        ship.shootCooldown = 20; 
+                    }
+                },
+                useBomb: function() {
+                    if (this.player.bombs > 0 && !this.isGameOver) { this.player.bombs--; audio.bomb(); this.shakeScreen(20);
+                        if (this.bossActive && this.boss) { this.boss.hp -= 50; audio.bossHit(); this.createExplosion(this.boss.x, this.boss.y, 15); } 
+                        else { this.enemies.forEach(e => this.createExplosion(e.x, e.y, 10)); this.score += this.enemies.length * 5 * this.level; this.enemies = []; }
+                        this.bullets = this.bullets.filter(b => !b.isEnemy);
+                    }
+                },
+                spawnBoss: function() {
+                    audio.warning();
+                    this.bossActive = true;
+                    const bossIndex = Math.min(Math.floor((this.level - 1) / 3), this.bossTypes.length - 1);
+                    const bossData = JSON.parse(JSON.stringify(this.bossTypes[bossIndex]));
+                    this.boss = {
+                        ...bossData,
+                        x: this.width / 2, y: 5, hp: bossData.hp + this.level * 10, maxHp: bossData.hp + this.level * 10, vx: 0.3, vy: 0, attackCooldown: 100, attackPatternIndex: 0
+                    };
+                    if (this.boss.name === 'Cosmic Void') {
+                        this.boss.art = this.boss.art_frames[0];
+                    }
+                },
+                updateBoss: function() {
+                    if (!this.boss) return; this.boss.x += this.boss.vx;
+                    if (this.boss.name === 'Cosmic Void') {
+                        this.boss.artUpdateCounter++;
+                        if (this.boss.artUpdateCounter > 5) { 
+                            this.boss.artUpdateCounter = 0;
+                            this.boss.artFrame = (this.boss.artFrame + 1) % this.boss.art_frames.length;
+                            this.boss.art = this.boss.art_frames[this.boss.artFrame];
+                        }
+                    }
+                    if (this.boss.x < this.boss.art[0].length/2 + 1 || this.boss.x > this.width - this.boss.art[0].length/2 - 1) { this.boss.vx *= -1; }
+                    for (let i = this.bullets.length - 1; i >= 0; i--) {
+                        const b = this.bullets[i]; if (b.isEnemy) continue; const bx = Math.floor(b.x), by = Math.floor(b.y); const bossX = Math.floor(this.boss.x), bossY = Math.floor(this.boss.y);
+                        const artHeight = this.boss.art.length; const artWidth = this.boss.art[0].length;
+                        if (bx >= bossX - artWidth/2 && bx <= bossX + artWidth/2 && by >= bossY - artHeight/2 && by <= bossY + artHeight/2) { this.boss.hp--; audio.bossHit(); this.createExplosion(bx, by, 3); this.bullets.splice(i,1); break; }
+                    }
+                    this.boss.attackCooldown--;
+                    if (this.boss.attackCooldown <= 0) {
+                        const pattern = this.boss.attackPatterns[this.boss.attackPatternIndex];
+                        switch(pattern.type) {
+                            case 'spread': 
+                                for(let i = -Math.floor(pattern.count/2); i <= Math.floor(pattern.count/2); i++){ 
+                                    this.bullets.push({ x: this.boss.x+i*2, y: this.boss.y + 2, dy: 1, char: '*', isEnemy: true, damage: pattern.damage, styleClass: 'boss-bullet' });
+                                } 
+                                break;
+                            case 'spawn': 
+                                for (let i=0; i < pattern.count; i++) {
+                                    this.enemies.push({ x: this.boss.x - 5 + i*10, y: this.boss.y, hp: 1 + this.level, type: pattern.enemyType, char: 'v', vx: -0.2 + i*0.4 }); 
+                                }
+                                break;
+                            case 'bombingRun':
+                                for (let i = 0; i < pattern.count; i++) {
+                                    setTimeout(() => {
+                                        if(!this.isGameOver && this.bossActive) {
+                                            const bombX = Math.random() * (this.width - 2) + 1;
+                                            this.bullets.push({ x: bombX, y: 2, dy: 0.8, char: 'o', isEnemy: true, damage: pattern.damage, styleClass: 'enemy-bullet' });
+                                        }
+                                    }, i * 100);
+                                }
+                                break;
+                            case 'barrage':
+                                 for(let i=0; i<5; i++){ 
+                                    setTimeout(() => { if(!this.isGameOver) this.bullets.push({ x: this.boss.x - 2 + Math.random() * 4, y: this.boss.y + 2, dy: 1.2, char: 'i', isEnemy: true, damage: pattern.damage, styleClass: 'boss-bullet' }); }, i * 80); 
+                                }
+                                break;
+                        }
+                        this.boss.attackCooldown = pattern.cooldown - this.level * 2;
+                        this.boss.attackPatternIndex = (this.boss.attackPatternIndex + 1) % this.boss.attackPatterns.length;
+                    }
+                    if (this.boss.hp <= 0) {
+                         this.createExplosion(this.boss.x, this.boss.y, 50); 
+                         this.bossActive = false; this.boss = null; this.score += 1000 * this.level; audio.levelUp(); 
+                         if(this.level < 9) {
+                            this.level++;
+                            this.showLevelIntro();
+                         } else {
+                            this.gameWin();
+                         }
+                    }
+                },
+                drawBoss: function(grid) {
+                    if (!this.boss) return; const bossX = Math.floor(this.boss.x), bossY = Math.floor(this.boss.y); const artHeight = this.boss.art.length; const artWidth = this.boss.art[0].length;
+                    for (let y = 0; y < artHeight; y++) { for (let x = 0; x < artWidth; x++) { const gridX = bossX - Math.floor(artWidth / 2) + x; const gridY = bossY - Math.floor(artHeight / 2) + y; if (grid[gridY] && grid[gridY][gridX]) { grid[gridY][gridX] = `<span class="boss">${this.boss.art[y][x]}</span>`; } } }
+                    const healthBarWidth = 20; const filledWidth = Math.ceil((this.boss.hp / this.boss.maxHp) * healthBarWidth); let healthBar = `${this.boss.name}: [${'█'.repeat(filledWidth)}${'-'.repeat(healthBarWidth - filledWidth)}]`;
+                    for(let i=0; i < healthBar.length; i++) { if(grid[1]) grid[1][Math.floor(this.width/2 - healthBar.length/2) + i] = `<span class="boss-health-bar">${healthBar[i]}</span>`; }
+                },
+                createExplosion: function(x, y, lifetime) { this.explosions.push({ x, y, char: '*', lifetime }); },
+                spawnPowerUp: function(x, y) {
+                    const rand = Math.random(); let type, char, styleClass;
+                    if(rand < 0.15) { type = 'mothership'; char = 'M'; styleClass = 'powerup-mothership'; }
+                    else if(rand < 0.4) { type = 'shield'; char = 'S'; styleClass = 'powerup-shield'; }
+                    else if (rand < 0.65) { type = 'rapid'; char = 'R'; styleClass = 'powerup-rapid'; }
+                    else if (rand < 0.85) { type = 'health'; char = 'H'; styleClass = 'powerup-health'; }
+                    else { type = 'bomb'; char = 'B'; styleClass = 'powerup-bomb'; }
+                    this.powerUps.push({x, y, type, char, styleClass});
+                },
+                draw: function() {
+                    let grid = Array(this.height).fill(null).map(() => Array(this.width).fill(' '));
+                    for(let i = 0; i < this.width; i++) { grid[0][i] = '─'; grid[this.height - 1][i] = '─'; } for(let i = 0; i < this.height; i++) { grid[i][0] = '│'; grid[i][this.width - 1] = '│'; }
+                    grid[0][0] = '┌'; grid[0][this.width - 1] = '┐'; grid[this.height-1][0] = '└'; grid[this.height-1][this.width-1] = '┘';
+                    let playerChar = this.player.char; if (this.player.shield > 0) playerChar = `(${this.player.char})`; if (!this.isGameOver) { grid[Math.floor(this.player.y)][Math.floor(this.player.x)] = `<span class="player">${playerChar}</span>`; }
+                    if (this.player.mothership) { grid[Math.floor(this.player.mothership.y)][Math.floor(this.player.mothership.x)] = `<span class="mothership">${this.player.mothership.char}</span>`; }
+                    this.bullets.forEach(b => { if(grid[Math.floor(b.y)]) grid[Math.floor(b.y)][Math.floor(b.x)] = `<span class="${b.styleClass || (b.isEnemy ? 'enemy-bullet' : 'bullet')}">${b.char}</span>`; });
+                    this.enemies.forEach(e => { let styleClass = 'enemy'; if (e.type === 'tank') styleClass = 'enemy-tank'; if (e.type === 'fast') styleClass = 'enemy-fast'; if(grid[Math.floor(e.y)]) grid[Math.floor(e.y)][Math.floor(e.x)] = `<span class="${styleClass}">${e.char}</span>`; });
+                    this.powerUps.forEach(p => { if(grid[Math.floor(p.y)]) grid[Math.floor(p.y)][Math.floor(p.x)] = `<span class="powerup ${p.styleClass}">${p.char}</span>`; });
+                    this.explosions.forEach(ex => { if(grid[Math.floor(ex.y)]) grid[Math.floor(ex.y)][Math.floor(ex.x)] = `<span class="explosion">${ex.char}</span>`; });
+                    if(this.bossActive) this.drawBoss(grid);
+                    this.display.innerHTML = grid.map(row => row.join('')).join('\n');
+                    const shieldStat = this.player.shield > 0 ? `<span>SHIELD: ${Math.max(0, this.player.shield)}</span>` : '';
+                    const bombStat = `<span>BOMBS: ${this.player.bombs}</span>`;
+                    const mothershipStat = this.player.mothershipTimer > 0 ? `<span>ALLY: ${Math.ceil(this.player.mothershipTimer/20)}s</span>` : '';
+                    this.statsDisplay.innerHTML = `<span>SCORE: ${this.score}</span> <span>LEVEL: ${this.level}</span> <span>HP: ${Math.max(0, this.player.hp)}</span> ${shieldStat} ${bombStat} ${mothershipStat}`;
+                },
+                gameOver: function() {
+                    this.isGameOver = true; clearInterval(this.gameLoopInterval);
+                    let newHighScore = false;
+                    if (this.score > this.highScore) { this.highScore = this.score; localStorage.setItem('voidStrikerHighScore', this.score); newHighScore = true; }
+                    let grid = Array(this.height).fill(null).map(() => Array(this.width).fill(' '));
+                    const gameOverText = "G A M E   O V E R"; const scoreText = `FINAL SCORE: ${this.score}`; const highScoreText = newHighScore ? "NEW HIGH SCORE!" : `HIGH SCORE: ${this.highScore}`; const restartText = "Press [Enter] to return to terminal";
+                    const texts = [gameOverText, scoreText, highScoreText, restartText];
+                    texts.forEach((text, index) => { const startX = Math.floor(this.width / 2 - text.length / 2); for(let i = 0; i < text.length; i++) grid[Math.floor(this.height/2 - 3 + index*2)][startX + i] = text[i]; });
+                    this.display.innerHTML = grid.map(row => row.join('')).join('\n');
+                },
+                gameWin: function() {
+                    this.isGameOver = true; clearInterval(this.gameLoopInterval);
+                    let grid = Array(this.height).fill(null).map(() => Array(this.width).fill(' '));
+                    const winText = "V I C T O R Y"; const winSubText = "You have silenced the Void. Humanity is safe... for now."; const scoreText = `FINAL SCORE: ${this.score}`; const restartText = "Press [Enter] to return to terminal";
+                    const texts = [winText, winSubText, scoreText, restartText];
+                    texts.forEach((text, index) => { const startX = Math.floor(this.width / 2 - text.length / 2); for(let i = 0; i < text.length; i++) grid[Math.floor(this.height/2 - 3 + index*2)][startX + i] = text[i]; });
+                    this.display.innerHTML = grid.map(row => row.join('')).join('\n');
+                },
+                endGame: function() { clearInterval(this.gameLoopInterval); gameContainer.style.display = 'none'; terminalContent.style.display = 'block'; inGame = false; commandInput.focus(); }
+            };
+
+
+            // --- FIREBASE AUTH LISTENER ---
+            onAuthStateChanged(auth, user => {
+                if (user) { currentUser = user; } else { if (inChat) { ShadowNetwork.exitChat(); } currentUser = null; }
+                updateChatUI(inChat && currentUser);
             });
-        }
-
-        generateSpiral();
-
-        const spiralContainer = document.getElementById('spiralContainer');
-        const spiral = spiralContainer.querySelector('.spiral');
-        const navLinks = document.getElementById('navLinks');
-        const aboutSpiral = document.getElementById('aboutSpiral');
-        const aboutContent = document.getElementById('aboutContent');
-        const contentColumns = document.getElementById('contentColumns');
-
-        let navVisible = false;
-
-        function toggleMainSpiral(show) {
-            if (show) {
-                spiral.classList.add('paused');
-                navLinks.classList.add('show-links');
-                navVisible = true;
-            } else if (!navVisible) {
-                spiral.classList.remove('paused');
-                navLinks.classList.remove('show-links');
+            
+            // --- UI STATE UPDATER ---
+            function updateChatUI(isChatting) {
+                if (inPythonMode) {
+                    terminalTitle.textContent = 'Python REPL';
+                    terminalPrompt.textContent = pythonCodeBlock ? '... ' : '>>> ';
+                } else if (inAIMode) {
+                    terminalTitle.textContent = 'CAMEOSKY / AI Assistant';
+                    terminalPrompt.innerHTML = '<span>cameosky@ /ask/&nbsp;</span>';
+                } else if (inSearchMode) {
+                    terminalTitle.textContent = 'CAMEOSKY / Knowledge Nexus';
+                    terminalPrompt.textContent = '[nexus@cameosky ~]$';
+                } else if(isChatting && currentUser) {
+                    const username = currentUser.email.split('@')[0];
+                    terminalTitle.textContent = `Greyskin Secure Chat / ${username}`;
+                    terminalPrompt.textContent = `[${username}]$`;
+                } else {
+                    terminalTitle.textContent = 'CAMEOSKY@arch-terminal';
+                    terminalPrompt.textContent = '[cameosky@arch ~]$';
+                }
             }
-        }
 
-        function showAboutContent() {
-            aboutSpiral.querySelector('.spiral').classList.add('transform-spiral');
-            setTimeout(() => {
-                aboutContent.style.opacity = '1';
-                contentColumns.style.display = 'grid';
-                setTimeout(() => {
-                    contentColumns.classList.add('show-content');
-                }, 100);
-            }, 1000);
-        }
+            // --- SHADOW NETWORK CHAT SYSTEM (with Firebase) ---
+            const ShadowNetwork = {
+                enterChat: function() {
+                    if (!currentUser) { printOutput("Authentication required. Type 'greyskin' to begin.", false); return; }
+                    inChat = true; updateChatUI(true);
+                    historyContainer.innerHTML += `<div class="output auth-success"><br>=== SECURE CHANNEL OPENED ===</div>`;
+                    const instructions = `Welcome, ${currentUser.email.split('@')[0]}.<br>` + `  - Type your message and press Enter.<br>` + `  - To reply to a message, use <span style="color:#ff8c00">/&lt;number&gt;/ &lt;your_reply&gt;</span><br>`+ `  - To mention a user, use <span style="color:#ff8c00">/@&lt;username&gt;/ &lt;your_message&gt;</span><br>` + `  - Type <span style="color:#ff4500">'exit'</span> to disconnect.`;
+                    printOutput(instructions, true);
+                    const chatCollection = collection(db, "greyskin_chat");
+                    const q = query(chatCollection, orderBy("timestamp", "asc")); 
+                    unsubscribeChat = onSnapshot(q, (querySnapshot) => {
+                        historyContainer.querySelectorAll('.chat-message').forEach(el => el.remove()); chatMessages = [];
+                        querySnapshot.forEach(doc => { const messageData = { id: doc.id, ...doc.data() }; chatMessages.push(messageData); this.displayMessage(messageData, chatMessages.length); });
+                        terminalBody.scrollTop = terminalBody.scrollHeight;
+                    }, (error) => { console.error("Error listening to chat:", error); printOutput("Error connecting to the shadow network.", false); });
+                },
+                exitChat: function() { if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; } inChat = false; updateChatUI(false); printOutput("<br>Disconnected from shadow network.", true); },
+                sendMessage: async function(text) {
+                    if (!inChat || !currentUser || !text.trim()) return;
+                    let messageText = text.trim();
+                    const replyNumRegex = /^\/(\d+)\/(.*)/; const replyUserRegex = /^\/@(\w+)\/(.*)/;
+                    const numMatch = messageText.match(replyNumRegex); const userMatch = messageText.match(replyUserRegex);
+                    if (numMatch) { messageText = `<span class="chat-reply-context">(reply to #${numMatch[1]})</span> ${numMatch[2].trim()}`; } else if (userMatch) { messageText = `<span class="chat-reply-context">(to @${userMatch[1]})</span> ${userMatch[2].trim()}`; }
+                    try { await addDoc(collection(db, "greyskin_chat"), { user: currentUser.email.split('@')[0], text: messageText, timestamp: serverTimestamp() }); audio.chatMessage();
+                    } catch (e) { console.error("Error sending message: ", e); printOutput("Message could not be sent.", false); }
+                },
+                displayMessage: function(message, number) {
+                    if (!message.timestamp) return; if(document.querySelector(`[data-msg-id="${message.id}"]`)) return;
+                    const time = message.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const messageElement = document.createElement('div'); messageElement.className = 'chat-message'; messageElement.dataset.msgId = message.id;
+                    messageElement.innerHTML = `<span class="chat-message-number">[${number}]</span>` + `<span class="chat-message-time">${time}</span> ` + `<span class="chat-message-user">${message.user}:</span> ` + `<span class="chat-message-text">${message.text}</span>`;
+                    historyContainer.appendChild(messageElement);
+                }
+            };
 
-        spiralContainer.addEventListener('click', () => {
-            navVisible = !navVisible;
-            toggleMainSpiral(navVisible);
-        });
+            function showAnimatedIntro() {
+                terminalContent.style.display = 'none';
+                searchViewContainer.style.display = 'none';
+                gameContainer.style.display = 'none';
+                
+                const introContainer = document.createElement('div');
+                introContainer.id = 'intro-container';
+                introContainer.style.cssText = `
+                    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                    background: #000; color: #e0e0e0; font-family: 'JetBrains Mono', monospace;
+                    display: flex; flex-direction: column; justify-content: center; align-items: center;
+                    padding: 20px; text-align: center; z-index: 5000; user-select: none;
+                `;
 
-        spiralContainer.addEventListener('mouseenter', () => toggleMainSpiral(true));
-        spiralContainer.addEventListener('mouseleave', (e) => {
-            if (!navVisible) {
-                toggleMainSpiral(false);
+                const pre = document.createElement('pre');
+                pre.style.fontSize = '12px';
+                pre.style.lineHeight = '1';
+
+                const textOverlay = document.createElement('p');
+                textOverlay.style.cssText = `
+                    position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
+                    max-width: 800px; line-height: 1.7; font-size: 1.1em;
+                    background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;
+                `;
+
+                const skipPrompt = document.createElement('p');
+                skipPrompt.style.cssText = `
+                    position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%);
+                    color: #ff4500; animation: blink 1.5s infinite; font-size: 1.1em;
+                `;
+                skipPrompt.textContent = "Press [Enter] to Skip";
+
+                introContainer.appendChild(pre);
+                introContainer.appendChild(textOverlay);
+                introContainer.appendChild(skipPrompt);
+                terminalBody.appendChild(introContainer);
+
+                let animationTimeout;
+                const scenes = [
+                    { duration: 4000, text: "Across the cosmos, a signal radiates from a small, blue world..." },
+                    { duration: 4000, text: "A signal of life. A signal of... competition." },
+                    { duration: 5000, text: "The Spiral God, an ancient cosmic entity, has heard the call." },
+                    { duration: 5000, text: "It tolerates no rivals. Its tendrils now reach for Earth." },
+                    { duration: 6000, text: "You are the Void-Striker. Humanity's last defense against cosmic silence." }
+                ];
+
+                let sceneIndex = 0;
+                function runScene() {
+                    if (sceneIndex >= scenes.length) {
+                        endIntro();
+                        return;
+                    }
+                    textOverlay.textContent = scenes[sceneIndex].text;
+                    animationTimeout = setTimeout(runScene, scenes[sceneIndex].duration);
+                    sceneIndex++;
+                }
+
+                const earth = [
+                    '    .oOOOo.    ',
+                    '   .OOooOoo.   ',
+                    '  .OooOoooOoo. ',
+                    ' .ooooooooooo. ',
+                    '.ooooooooooooo.',
+                    'ooooooooooooooo',
+                    'ooooooooooooooo',
+                    '.ooooooooooooo.',
+                    ' `ooooooooooo` ',
+                    '  `OooOoooOoo` ',
+                    '   `OOooOoo`   ',
+                    '    `oOOOo`    '
+                ];
+                
+                let spiralRadius = 30;
+                let spiralAngle = 0;
+                function animate() {
+                    if (!document.body.contains(introContainer)) return;
+                    
+                    const width = 80, height = 30;
+                    let grid = Array(height).fill(null).map(() => Array(width).fill(' '));
+
+                    // Draw stars
+                    for(let i=0; i<50; i++) {
+                        grid[Math.floor(Math.random()*height)][Math.floor(Math.random()*width)] = '.';
+                    }
+
+                    // Draw Earth
+                    earth.forEach((line, y) => {
+                        const earthY = Math.floor(height/2 - earth.length/2) + y;
+                        const earthX = Math.floor(width/2 - line.length/2);
+                        for(let x=0; x < line.length; x++) {
+                            if(grid[earthY]) grid[earthY][earthX + x] = line[x];
+                        }
+                    });
+
+                    // Draw Spiral God
+                    if (sceneIndex > 1) {
+                        spiralRadius -= 0.1;
+                        spiralAngle += 0.1;
+                        for(let i=0; i<100; i++) {
+                            const t = i * 0.1 + spiralAngle;
+                            const r = Math.max(0, spiralRadius) * (i/100);
+                            const x = Math.floor(width * 0.8 + r * Math.cos(t));
+                            const y = Math.floor(height/2 + r * Math.sin(t));
+                            if(grid[y] && grid[y][x]) grid[y][x] = '#';
+                        }
+                    }
+                    
+                    pre.textContent = grid.map(row => row.join('')).join('\n');
+                    requestAnimationFrame(animate);
+                }
+
+                function endIntro() {
+                    clearTimeout(animationTimeout);
+                    document.removeEventListener('keydown', skipHandler);
+                    if (document.body.contains(introContainer)) {
+                        terminalBody.removeChild(introContainer);
+                    }
+                    printOutput("Initializing VOID-STRIKER... Good luck, pilot.", true);
+                    Game.init();
+                }
+
+                function skipHandler(e) {
+                    if (e.key === 'Enter') {
+                        endIntro();
+                    }
+                }
+                
+                document.addEventListener('keydown', skipHandler);
+                animate();
+                runScene();
             }
-        });
+            
+            // --- KNOWLEDGE MAP V4 (ENHANCED) ---
+            const KnowledgeMap = {
+                nodes: [],
+                container: mapGridContainer,
+                infoPanel: mapInfoPanel,
+                searchHistory: [],
+                historyIndex: -1,
+                highlightedIndex: -1,
+                
+                init(term, fromHistory = false) {
+                    this.highlightedIndex = -1; 
+                    if (!fromHistory) {
+                        if (this.historyIndex < this.searchHistory.length - 1) {
+                            this.searchHistory.splice(this.historyIndex + 1);
+                        }
+                        this.searchHistory.push(term);
+                        this.historyIndex++;
+                    }
+                    
+                    searchBackBtn.disabled = this.historyIndex <= 0;
+                    searchForwardBtn.disabled = this.historyIndex >= this.searchHistory.length - 1;
 
-        spiralContainer.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            toggleMainSpiral(true);
-        });
+                    this.container.innerHTML = `Connecting to Knowledge Matrix for <strong style="color:white">"${term}"</strong>...`;
+                    this.infoPanel.innerHTML = '';
+                    this.fetchData(term);
+                },
 
-        aboutSpiral.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showAboutContent();
-        });
+                goBack() {
+                    if (this.historyIndex > 0) {
+                        this.historyIndex--;
+                        this.init(this.searchHistory[this.historyIndex], true);
+                    }
+                },
 
-        aboutSpiral.addEventListener('mouseenter', (e) => {
-            e.stopPropagation();
-            showAboutContent();
-        });
+                goForward() {
+                    if (this.historyIndex < this.searchHistory.length - 1) {
+                        this.historyIndex++;
+                        this.init(this.searchHistory[this.historyIndex], true);
+                    }
+                },
 
-        aboutSpiral.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            showAboutContent();
-        });
+                async fetchData(term) {
+                    const WIKI_API = "https://en.wikipedia.org/w/api.php?action=parse&format=json&origin=*&redirects=1&prop=text|images";
+                    try {
+                        const response = await fetch(WIKI_API + `&page=${encodeURIComponent(term)}`);
+                        const data = await response.json();
 
-        document.addEventListener('click', (e) => {
-            if (!spiralContainer.contains(e.target) && navVisible) {
-                navVisible = false;
-                toggleMainSpiral(false);
+                        if (data.error) { throw new Error(data.error.info); }
+
+                        const pageTitle = data.parse.title;
+                        const html = data.parse.text['*'];
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const content = doc.querySelector('.mw-parser-output');
+
+                        if (!content) { throw new Error("Could not parse Wikipedia content."); }
+
+                        const paragraphs = Array.from(content.querySelectorAll('p'));
+                        let summary = paragraphs.slice(0, 4)
+                            .map(p => p.textContent.trim().replace(/\[\d+\]/g, '')) // remove citation numbers
+                            .filter(text => text.length > 50)
+                            .join('\n\n');
+                        
+                        if (!summary) { summary = paragraphs.length > 0 ? paragraphs[0].textContent.trim().replace(/\[\d+\]/g, '') : "No detailed summary available."; }
+
+                        let imageUrl = null;
+                        const imageElement = doc.querySelector('.infobox img, .thumbinner img');
+                        if (imageElement) {
+                            let src = imageElement.src;
+                            if (src.startsWith('//')) { src = 'https:' + src; }
+                            imageUrl = src;
+                        }
+
+                        this.nodes = [];
+                        const centralNode = {
+                            id: pageTitle, label: pageTitle, summary: summary,
+                            imageUrl: imageUrl, isCentral: true,
+                        };
+                        this.nodes.push(centralNode);
+
+                        const links = Array.from(content.querySelectorAll('p a[href^="/wiki/"]'));
+                        const uniqueLinks = new Set();
+                        const suggestedNodes = links
+                            .map(link => ({ title: link.title, href: link.getAttribute('href') }))
+                            .filter(link => {
+                                if (link.title && !link.href.includes(':') && !uniqueLinks.has(link.title)) {
+                                    uniqueLinks.add(link.title);
+                                    return true;
+                                }
+                                return false;
+                            })
+                            .slice(0, 49)
+                            .map(link => ({ id: link.title, label: link.title, isCentral: false }));
+
+                        this.nodes.push(...suggestedNodes);
+                        this.render(centralNode);
+
+                    } catch (e) {
+                        this.container.innerHTML = `<span class="auth-error">Error fetching data: ${e.message}</span>`;
+                        this.infoPanel.innerHTML = `<div class="info-summary">Please try another search term.</div>`;
+                        console.error(e);
+                    }
+                },
+                
+                render(activeNode) {
+                    this.container.innerHTML = '';
+                    this.nodes.forEach((node, index) => {
+                        const nodeEl = document.createElement('div');
+                        nodeEl.className = 'map-node-retro';
+                        nodeEl.dataset.nodeId = node.id;
+                        
+                        let connector = '├─';
+                        if (index === this.nodes.length - 1) connector = '└─';
+                        if (node.isCentral) connector = '┌─';
+
+                        nodeEl.innerHTML = `<span class="node-connector">${connector}</span><span class="node-title">${node.label}</span>`;
+                        
+                        if (node.id === activeNode.id) {
+                            nodeEl.classList.add('active-node');
+                        }
+                        
+                        nodeEl.addEventListener('click', () => { this.init(node.label); });
+                        this.container.appendChild(nodeEl);
+                    });
+                    
+                    this.displayInfo(activeNode);
+                },
+                
+                displayInfo(node) {
+                    let imageHtml = '';
+                    if (node.imageUrl) {
+                        imageHtml = `
+                            <div class="image-container">
+                                <img src="${node.imageUrl}" class="theme-image" alt="Image related to ${node.label}" onerror="this.style.display='none'">
+                            </div>`;
+                    }
+
+                    let summaryHtml = node.summary.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    const relatedTitles = this.nodes.map(n => n.label).filter(label => label !== node.label);
+                    relatedTitles.sort((a, b) => b.length - a.length);
+
+                    relatedTitles.forEach(title => {
+                        const safeTitle = title.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                        const regex = new RegExp(`\\b(${safeTitle})\\b`, 'gi');
+                        summaryHtml = summaryHtml.replace(regex, `<span class="topic-link" data-topic="${title}">$1</span>`);
+                    });
+
+                    this.infoPanel.innerHTML = `
+                        <div class="info-title">${node.label}</div>
+                        ${imageHtml}
+                        <div class="info-summary">${summaryHtml}</div>
+                    `;
+                },
+
+                updateHighlight(direction) {
+                    const gridNodes = this.container.querySelectorAll('.map-node-retro');
+                    if (gridNodes.length === 0) return;
+
+                    if (this.highlightedIndex > -1 && gridNodes[this.highlightedIndex]) {
+                        gridNodes[this.highlightedIndex].classList.remove('highlighted-node');
+                    }
+
+                    this.highlightedIndex += direction;
+                    if (this.highlightedIndex >= gridNodes.length) { this.highlightedIndex = 0; }
+                    if (this.highlightedIndex < 0) { this.highlightedIndex = gridNodes.length - 1; }
+
+                    const newNode = gridNodes[this.highlightedIndex];
+                    newNode.classList.add('highlighted-node');
+                    newNode.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            };
+            
+
+            // --- GLOBAL EVENT LISTENERS ---
+            document.addEventListener('keydown', (e) => {
+                if (inGame) {
+                    const key = e.key.toLowerCase(); if (key === 'q') { Game.endGame(); return; } if (key === 'b') { Game.useBomb(); return; }
+                    if (Game.isGameOver) { if (e.key === 'Enter') Game.endGame(); return; }
+                    Game.keys[e.key] = true; if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
+                    return;
+                }
+
+                if (inSearchMode) {
+                    if (document.activeElement === knowledgeSearchInput) {
+                        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                             e.preventDefault();
+                             knowledgeSearchInput.blur();
+                        } else {
+                             return; 
+                        }
+                    }
+                    e.preventDefault();
+                    switch(e.key) {
+                        case 'ArrowDown': KnowledgeMap.updateHighlight(1); break;
+                        case 'ArrowUp': KnowledgeMap.updateHighlight(-1); break;
+                        case 'ArrowLeft': searchBackBtn.click(); break;
+                        case 'ArrowRight': searchForwardBtn.click(); break;
+                        case 'Enter':
+                            if (KnowledgeMap.highlightedIndex > -1) {
+                                const nodeToActivate = document.querySelector('.highlighted-node');
+                                if(nodeToActivate) nodeToActivate.click();
+                            }
+                            break;
+                        case 'Escape': knowledgeSearchInput.focus(); break;
+                    }
+                }
+            });
+            document.addEventListener('keyup', (e) => { if(inGame) Game.keys[e.key] = false; });
+            terminalContainer.addEventListener('click', (e) => { if (!inGame) commandInput.focus(); });
+            
+            searchBackBtn.addEventListener('click', () => KnowledgeMap.goBack());
+            searchForwardBtn.addEventListener('click', () => KnowledgeMap.goForward());
+
+            knowledgeSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const query = knowledgeSearchInput.value.trim();
+                    if (query.toLowerCase() === 'quit') {
+                        handleSearchCommand('quit');
+                    } else if (query) {
+                        handleSearchCommand(`search ${query}`);
+                    }
+                    knowledgeSearchInput.value = '';
+                }
+            });
+
+            mapInfoPanel.addEventListener('click', (e) => {
+                if (e.target.classList.contains('topic-link')) {
+                    const topic = e.target.dataset.topic;
+                    if (topic) { KnowledgeMap.init(topic); }
+                }
+            });
+
+            // --- INTERACTIVE TERMINAL LOGIC ---
+            commandInput.addEventListener('keydown', function(event) {
+                if (inGame) return;
+
+                if (event.key === 'Enter') {
+                    event.preventDefault(); clearAllIntervals();
+                    const commandText = commandInput.value.trim();
+                    if (!commandText && !authState.inProgress && !pythonCodeBlock) return;
+                    
+                    if(inSearchMode) {
+                        handleSearchCommand(commandText);
+                        commandInput.value = '';
+                        return;
+                    }
+
+                    let promptContent = terminalPrompt.textContent;
+                    if (!(authState.inProgress && authState.step === 2)) {
+                         let historyLine = document.createElement('div'); historyLine.className = 'terminal-line'; historyLine.innerHTML = `<span class="prompt">${promptContent}</span><span class="command">${commandText}</span>`;
+                         historyContainer.appendChild(historyLine);
+                    } else {
+                         let historyLine = document.createElement('div'); historyLine.innerHTML = `<div class="terminal-line"><span class="prompt">${promptContent}</span><span class="command">**********</span></div>`;
+                         historyContainer.appendChild(historyLine);
+                    }
+                    if (inAIMode) { handleAIChatInput(commandText); } 
+                    else if (inPythonMode) { handlePythonInput(commandText); } 
+                    else if (authState.inProgress) { handleAuthFlow(commandText); } 
+                    else if (inChat) { handleChatCommand(commandText); } 
+                    else { processCommand(commandText); }
+                    commandInput.value = '';
+                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                } else if (event.key === 'Backspace' && commandInput.value.length > 0) { audio.delete(); }
+            });
+
+            function processCommand(command) {
+                let outputElement = document.createElement('div');
+                outputElement.className = 'output';
+                const [cmd, ...args] = command.split(' ');
+                const query = args.join(' ');
+
+                switch(cmd.toLowerCase()) {
+                    case 'play': showAnimatedIntro(); break;
+                    case 'exit': outputElement.textContent = `This command is used to exit specific modes like chat or the game.`; audio.error(); break;
+                    case 'python':
+                        if (pyodideReady) { inPythonMode = true; updateChatUI(); outputElement.innerHTML = `Entered Python REPL. Type your Python code. Multi-line statements are supported. Type 'exit()' to leave.`; } 
+                        else { outputElement.innerHTML = `Python runtime is still loading or failed to load. Please wait.`; audio.error(); }
+                        break;
+                    case 'ask':
+                        inAIMode = true; updateChatUI();
+                        outputElement.innerHTML = `Entered AI chat mode. I'm listening.<br>Type 'quit' to exit this mode.`;
+                        if (query) { getAiResponse(query); }
+                        break;
+                    case 'search':
+                        if (query) {
+                            inSearchMode = true; updateChatUI(); terminalContent.style.display = 'none'; searchViewContainer.style.display = 'flex';
+                            KnowledgeMap.init(query);
+                        } else {
+                            outputElement.textContent = 'Usage: search <query>'; audio.error();
+                        }
+                        break;
+                    case 'greyskin':
+                        if (currentUser) { printOutput("Already authenticated. Entering chat...", true); ShadowNetwork.enterChat(); } 
+                        else { outputElement.innerHTML = `<span class="secret-prompt">Secure channel initiated...</span>`; outputElement.classList.add('auth-prompt'); setTimeout(() => { authState.inProgress = true; authState.step = 0; printOutput("Select authentication method: [login] or [register]", true); }, 500); }
+                        break;
+                     case 'logout':
+                        if (currentUser) { signOut(auth).then(() => { printOutput("You have been successfully logged out.", true); }).catch((error) => { printOutput(`Logout failed: ${error.message}`, false); }); } 
+                        else { printOutput("No user is currently logged in.", false); }
+                        break;
+                    case 'whoami': outputElement.textContent = currentUser ? currentUser.email.split('@')[0] : 'guest'; break;
+                    case 'date': outputElement.textContent = new Date().toString(); break;
+                    case 'spiralspeaks':
+                        if (query) { runMascotAnimation(outputElement, 'talking', query); } 
+                        else { outputElement.textContent = `Usage: spiralspeaks <message>`; audio.error(); }
+                        break;
+                    case 'neofetch':
+                        const neofetchUser = currentUser ? currentUser.email.split('@')[0] : 'guest';
+                        const artContainer = document.createElement('div'); const textContainer = document.createElement('span');
+                        outputElement.style.display = 'flex'; outputElement.style.gap = '20px'; outputElement.style.alignItems = 'center';
+                        runMascotAnimation(artContainer, 'neofetch');
+                        textContainer.innerHTML = `<pre style="color:#ff4500">${neofetchUser}@cameosky
+<span style="color:#c7c7c7">------------------</span>
+<span style="color:#c7c7c7">OS: </span>Arch Terminal
+<span style="color:#c7c7c7">Host: </span>CAMEOSKY Web
+<span style="color:#c7c7c7">Kernel: </span>JavaScript (ES2023)
+<span style="color:#c7c7c7">Shell: </span>DOM v7.0
+<span style="color:#c7c7c7">DE: </span>Retro
+<span style="color:#c7c7c7">Theme: </span>OrangeSpice
+<span style="color:#c7c7c7">Mascot: </span>The Spiral
+<span style="color:#c7c7c7">Terminal: </span>CAMEOSKY
+<span style="color:#c7c7c7">CPU: </span>Your Browser
+<span style="color:#c7c7c7">GPU: </span>Your GPU
+<span style="color:#c7c7c7">Memory: </span>Finite</pre>`;
+                        outputElement.appendChild(artContainer); outputElement.appendChild(textContainer);
+                        break;
+                     case 'help':
+                        outputElement.innerHTML = `Available commands:\n` + `  play              - Start the VOID-STRIKER game\n` + `  python            - Enter the interactive Python REPL\n` + `  search <query>    - Generate a visual knowledge map\n` + `  ask <question>    - Enter interactive AI chat mode\n` + `  greyskin          - Authenticate and enter the secure chat\n` + `  logout            - Log out of your account\n` + `  whoami            - Display current user\n` + `  date              - Show current date and time\n` + `  spiralspeaks <msg> - The terminal mascot will speak\n` + `  neofetch          - Display animated 'system' info\n` + `  help              - Show this help menu\n` + `  -social           - Get my social media links\n` + `  tech              - See technologies I use\n` + `  more              - Learn more about me\n` + `  clear             - Clears the terminal history\n` + `  exit              - Used inside chat or python modes`;
+                        break;
+                    case 'clear': historyContainer.innerHTML = ''; return;
+                    case '-social': outputElement.innerHTML = `Find me on social platforms:\n\n` + `<a href="https://github.com/ShayanKhanJaved" class="terminal-link" target="_blank">GitHub</a>\n` + `<a href="https://linkedin.com/in/shayan-khan-javed-0a3190315" class="terminal-link" target="_blank">LinkedIn</a>\n` + `<a href="https://instagram.com/cameosky" class="terminal-link" target="_blank">Instagram</a>\n\n` + `<a href="mailto:cameosky@protonmail.com" class="terminal-link">Email</a>`; break;
+                    case 'tech': outputElement.innerHTML = `Core Technology Stack:\n\n` + `LANGUAGES:   TypeScript, JavaScript (ESNext), Python, Go, C#\n` + `FRONTEND:    React, Next.js, Vue, Svelte, HTML5, CSS3/Sass\n` + `MOBILE:      Flutter, React Native\n` + `BACKEND:     Node.js (Express, NestJS), Django, .NET Core, Go (Gin)\n` + `DATABASES:   PostgreSQL, MongoDB, Redis, Firebase, SQLite\n` + `DEVOPS/CLOUD:Docker, Kubernetes, CI/CD (GitHub Actions), Terraform\n` + `             AWS, Google Cloud, Vercel\n` + `AI/ML:       TensorFlow, PyTorch, Scikit-learn, OpenAI API\n` + `TOOLS:       Git, Neovim, VS Code, Linux, Android Studio`; break;
+                    case 'more': outputElement.innerHTML = `More about me:\n\n` + `PASSION: I use Flutter, HTML, React, C#, C++, and Python to create\n` + `fun and engaging applications that solve real-world problems.\n\n` + `NONPROFIT: I'm the founder of ChatNest, a nonprofit organization\n` + `dedicated to teaching children physics and computer science in a fun way.\n` + `MISSION: My goal is to make technology accessible and exciting for all.`; break;
+                    default: outputElement.textContent = `Command not found: ${command}. Type 'help' for a list of available commands.`; audio.error();
+                }
+                historyContainer.appendChild(outputElement);
             }
+            
+            function handleSearchCommand(command) {
+                if (command.toLowerCase() === 'quit') {
+                    inSearchMode = false; updateChatUI(); 
+                    searchViewContainer.style.display = 'none'; 
+                    terminalContent.style.display = 'block'; 
+                    commandInput.focus();
+                    printOutput("Exited Knowledge Nexus.", true);
+                    return;
+                }
+                const [cmd, ...args] = command.split(' ');
+                const query = args.join(' ');
+                if (cmd.toLowerCase() === 'search' && query) {
+                    KnowledgeMap.init(query);
+                } else {
+                     mapGridContainer.innerHTML = `<span class="auth-error">Invalid command in Nexus. Use 'search &lt;query&gt;' or 'quit'.</span>`;
+                }
+            }
+
+            function handleAIChatInput(command) {
+                if (command.toLowerCase() === 'quit') {
+                    inAIMode = false; updateChatUI(); printOutput("Exited AI chat mode.", true); return;
+                }
+                if(command) getAiResponse(command);
+            }
+
+            function handlePythonInput(command) {
+                if (command === 'exit()' || command === 'quit()') { inPythonMode = false; pythonCodeBlock = ''; updateChatUI(); printOutput("Exited Python REPL.", null); return; }
+                pythonCodeBlock += command + '\n';
+                if (command.trim().endsWith(':') || command.trim().endsWith('(') || command.trim().endsWith('[') || command.trim().endsWith('{') || (pythonCodeBlock && command.trim() !== '')) { updateChatUI(); } 
+                else { runPythonCode(pythonCodeBlock); pythonCodeBlock = ''; updateChatUI(); }
+            }
+
+            function handleAuthFlow(input) {
+                switch(authState.step) {
+                    case 0: if (input === 'login' || input === 'register') { authState.mode = input; authState.step = 1; printOutput("Enter email:", true); } else { printOutput("Invalid option. Type 'login' or 'register'", false); } break;
+                    case 1: authState.email = input; authState.step = 2; printOutput("Enter password:", true); commandInput.type = 'password'; break;
+                    case 2: authState.password = input; commandInput.type = 'text'; const action = authState.mode === 'login' ? signInWithEmailAndPassword : createUserWithEmailAndPassword;
+                        action(auth, authState.email, authState.password).then((userCredential) => { printOutput(`Authentication successful.`, true); audio.accessGranted(); ShadowNetwork.enterChat(); resetAuthState(); })
+                            .catch((error) => { printOutput(`Error: ${error.message.replace('Firebase: ', '')}`, false); audio.accessDenied(); resetAuthState(); });
+                        break;
+                }
+            }
+
+            function resetAuthState() { authState.inProgress = false; authState.mode = null; authState.step = 0; authState.email = ''; authState.password = ''; }
+            function handleChatCommand(command) { if (command.toLowerCase() === 'exit') { ShadowNetwork.exitChat(); return; } ShadowNetwork.sendMessage(command); }
+            function printOutput(text, isSuccess, customClass = 'output') {
+                const outputElement = document.createElement('div'); outputElement.className = customClass;
+                outputElement.innerHTML = text;
+                if (isSuccess === true) { outputElement.classList.add('auth-success'); } else if (isSuccess === false) { outputElement.classList.add('auth-error'); }
+                historyContainer.appendChild(outputElement);
+                terminalBody.scrollTop = terminalBody.scrollHeight;
+            }
+
+            // --- INITIALIZATION ---
+            generateSpiralPaths();
+            runAsciiAnimation(document.getElementById('ascii-animation-container'), false);
+            loadPyodideAndInit();
+            commandInput.focus();
         });
     </script>
 </body>
-
 </html>
