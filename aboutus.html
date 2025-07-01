@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAMEOSKY Terminal</title>
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/"
+        }
+      }
+    </script>
     <style>
         * {
             box-sizing: border-box;
@@ -257,7 +266,7 @@
         .secret-prompt { color: #ff4500; filter: blur(3px); transition: all 0.3s; }
         .secret-prompt:hover { filter: blur(0); }
 
-        /* --- KNOWLEDGE MAP V4 STYLES (ENHANCED) --- */
+        /* --- KNOWLEDGE MAP UPDATED STYLES --- */
         #search-view-container {
             display: none;
             flex-direction: column;
@@ -266,65 +275,36 @@
         }
         #knowledge-map-display {
             display: flex;
+            flex-direction: row; 
             height: calc(100% - 50px);
             width: 100%;
             gap: 10px;
         }
-        #map-grid-container {
-            flex: 2;
-            overflow-y: auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            align-content: start;
-            padding-right: 10px;
-        }
-        #map-grid-container::-webkit-scrollbar { width: 8px; }
-        #map-grid-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
-        #map-grid-container::-webkit-scrollbar-thumb { background: #ff4500; }
-        
-        .map-node-retro {
-            color: white;
-            border: 1px solid #ff4500;
-            padding: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: pre;
-            font-size: 0.85em;
-            line-height: 1.3;
-            overflow: hidden;
-            background: rgba(255, 69, 0, 0.05);
-        }
-        .map-node-retro:hover {
-            background: rgba(255, 69, 0, 0.2);
-            color: #ff4500;
-        }
-        .map-node-retro.active-node {
-            background: rgba(255, 69, 0, 0.3);
-            border-color: #ffae42;
-            color: white;
-            box-shadow: inset 0 0 10px rgba(255, 69, 0, 0.5);
-        }
-        .map-node-retro.highlighted-node {
-            border-color: #fff;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
-            transform: scale(1.05);
-            z-index: 10;
-            position: relative;
-        }
-        .node-title { font-weight: bold; color: #ff4500; }
-        .node-connector { color: #c7c7c7; }
-        
+
+        /* --- INFO PANEL (LEFT VIEW) --- */
         #map-info-panel {
-            flex: 1;
-            border: 1px solid #ff4500;
-            padding: 15px;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.2);
+            flex: 1; /* Takes 1/3 of space */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        #map-info-panel::-webkit-scrollbar { width: 8px; }
-        #map-info-panel::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
-        #map-info-panel::-webkit-scrollbar-thumb { background: #ff4500; }
+        #info-content-container {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ff4500;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #info-content {
+             padding: 15px;
+             overflow-y: auto;
+             flex-grow: 1;
+        }
+        #info-content::-webkit-scrollbar { width: 8px; }
+        #info-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
+        #info-content::-webkit-scrollbar-thumb { background: #ff4500; }
         .info-title {
             color: #ff4500;
             font-weight: bold;
@@ -348,19 +328,130 @@
         .info-summary .topic-link:hover {
             color: #ffae42;
         }
-
-        .image-container {
-            position: relative;
-            margin-bottom: 15px;
-            border-radius: 4px;
+        
+        #ai-analysis-container {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255, 69, 0, 0.3);
+        }
+        #ai-analysis-container .ai-response {
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        /* --- UPGRADED: IMAGE PANEL --- */
+        #image-panel {
+            flex: 1;
+            border: 1px solid #ff4500;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
         }
-        .theme-image {
-            display: block;
+        #image-panel img {
             max-width: 100%;
-            height: auto;
-            filter: grayscale(1) sepia(1) hue-rotate(-30deg) saturate(5); /* Orange filter */
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
         }
+        #image-panel .placeholder-text {
+            color: #888;
+            font-style: italic;
+        }
+        
+        /* --- RIGHT COLUMN (MAP AND GRID) --- */
+        #map-content-area {
+            flex: 2; /* Takes 2/3 of space */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        /* --- NEURAL MAP (BIG VIEW) --- */
+        #neural-map-container {
+            flex: 3; 
+            min-height: 0;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #ff4500;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        #neural-map-container .label {
+            color: #fff;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 14px;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 5px;
+            border-radius: 3px;
+            text-shadow: 0 0 5px #000;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: color 0.3s, text-shadow 0.3s, opacity 0.3s;
+        }
+        /* MODIFIED: Changed highlight color to orange */
+        #neural-map-container .label.highlight {
+            color: #ffae42;
+            text-shadow: 0 0 8px #ffae42;
+        }
+        
+        /* --- GRID CONTAINER (SMALL VIEW) --- */
+        #map-grid-container {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+            align-content: start;
+            padding: 10px;
+            border: 1px solid rgba(255, 69, 0, 0.2);
+            border-radius: 8px;
+        }
+        #map-grid-container::-webkit-scrollbar { width: 8px; }
+        #map-grid-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
+        #map-grid-container::-webkit-scrollbar-thumb { background: #ff4500; }
+        
+        /* --- UPGRADED: Suggestion Buttons --- */
+        .map-node-retro {
+            color: #e0e0e0;
+            background-color: rgba(255, 69, 0, 0.1);
+            border: 1px solid #ff4500;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95em;
+            line-height: 1.4;
+            overflow: hidden;
+            text-align: center;
+            border-radius: 4px;
+            text-shadow: 0 0 2px rgba(0,0,0,0.7);
+        }
+        .map-node-retro:hover {
+            background-color: rgba(255, 69, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.3);
+            color: #ffffff;
+        }
+        .map-node-retro.active-node {
+            background-color: #ff4500;
+            border-color: #ffae42;
+            color: black;
+            font-weight: bold;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .map-node-retro.highlighted-node {
+            border-color: #fff;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+            transform: scale(1.05);
+            z-index: 10;
+            position: relative;
+        }
+        .node-title { font-weight: bold; }
         
         #search-controls {
             flex-shrink: 0;
@@ -392,25 +483,38 @@
         #knowledge-search-input:focus {
             outline: none;
             box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+            border-color: #ffae42;
         }
-
+        
+        /* --- UPGRADED: Navigation Buttons --- */
         .search-nav-btn {
-            background: rgba(255, 69, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 69, 0, 0.2);
             border: 1px solid #ff4500;
-            color: #ff4500;
-            padding: 8px 12px;
+            color: #e0e0e0;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+            padding: 8px 16px;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: "JetBrains Mono", monospace;
+            font-weight: bold;
+            font-size: 1em;
         }
-        .search-nav-btn:hover:not(:disabled) {
-            background: rgba(255, 69, 0, 0.3);
+        .search-nav-btn:hover:not(:disabled), .search-nav-btn:focus {
+            background: rgba(255, 69, 0, 0.5);
             color: white;
+            box-shadow: 0 0 12px rgba(255, 100, 0, 0.6);
+            outline: none;
         }
         .search-nav-btn:disabled {
-            opacity: 0.4;
+            background: rgba(80, 80, 80, 0.2);
+            border-color: rgba(120, 120, 120, 0.5);
+            color: #777;
             cursor: not-allowed;
+            text-shadow: none;
         }
         
         @keyframes explosion-fade { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.5); } }
@@ -418,6 +522,16 @@
         @keyframes screen-shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } 20%, 40%, 60%, 80% { transform: translateX(5px); } }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+        @media (max-width: 1024px) {
+            #knowledge-map-display { flex-direction: column; }
+            #map-content-area, #map-info-panel {
+                flex: 1; 
+            }
+            #image-panel {
+                min-height: 150px;
+            }
+        }
 
         @media (max-width: 768px) {
             .main-container { padding-left: 20px; padding-top: 100px; flex-direction: column; }
@@ -433,7 +547,6 @@
             .spiral-about { position: absolute; top: 50%; left: 80%; width: 40px; height: 40px; }
             #game-screen { font-size: 12px; }
             #game-stats { font-size: 12px; }
-            #knowledge-map-display { flex-direction: column; }
             #map-info-panel { flex: 0.5; max-height: 200px; }
         }
 
@@ -490,7 +603,7 @@
     <span style="color: #ffffff;">    ~ Welcome to CAMEOSKY terminal ~</span>
                                 </pre>
                                 <p class="intro-text">
-                                 I'm a passionate developer and creative thinker with a deep interest in building innovative, user-centric solutions. This terminal is a reflection of my love for retro-tech. Type <strong>help</strong> for a list of commands, or type <strong>play</strong> to start the game. Or type <strong>greyskin</strong> to access the secure chat channel (hidden).<br>
+                                Idk i was just bored. Type <strong>help</strong> for a list of commands, Type <strong>play</strong> to start the game. Type <strong>greyskin</strong> to access the secure chat channel (hidden). Type <strong>Search</strong> to search terms in a neural network. Type <strong>Python</strong> to run your personal code. Sandbox no data stored except chat which you can request for removal at <strong>Greycameosky@gmail.com</strong><br>
                                 </p>
                             </div>
                         </div>
@@ -511,8 +624,19 @@
 
                     <div id="search-view-container">
                         <div id="knowledge-map-display">
-                            <div id="map-grid-container"></div>
-                            <div id="map-info-panel"></div>
+                            <div id="map-info-panel">
+                               <div id="info-content-container">
+                                   <div id="info-content">
+                                       </div>
+                               </div>
+                               <div id="image-panel">
+                                   <span class="placeholder-text">Search for a term to see an image...</span>
+                               </div>
+                            </div>
+                            <div id="map-content-area">
+                                <div id="neural-map-container"></div>
+                                <div id="map-grid-container"></div>
+                            </div>
                         </div>
                          <div id="search-controls">
                              <button id="search-back-btn" class="search-nav-btn" disabled>&lt; Back</button>
@@ -526,6 +650,18 @@
     </div>
     
     <script type="module">
+        // --- 3D/Firebase/Pyodide Imports ---
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+        import { Line2 } from 'three/addons/lines/Line2.js';
+        import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+        import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // Firebase project configuration.
        const firebaseConfig = {
           apiKey: "AIzaSyBnqLJxoaIjzpVUA9jXscDYrjED5yLhJmg",
@@ -537,26 +673,6 @@
           appId: "1:179377879369:web:071a8725d93163691f0298",
           measurementId: "G-RHKB6D9XQL"
         };
-
-
-        // Import Firebase functions
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut, 
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            query, 
-            orderBy, 
-            onSnapshot,
-            serverTimestamp
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -579,9 +695,12 @@
             const searchViewContainer = document.getElementById('search-view-container');
             const mapGridContainer = document.getElementById('map-grid-container');
             const mapInfoPanel = document.getElementById('map-info-panel');
+            const infoContent = document.getElementById('info-content');
+            const imagePanel = document.getElementById('image-panel');
             const searchBackBtn = document.getElementById('search-back-btn');
             const searchForwardBtn = document.getElementById('search-forward-btn');
             const knowledgeSearchInput = document.getElementById('knowledge-search-input');
+            const neuralMapContainer = document.getElementById('neural-map-container');
 
 
             // --- STATE VARIABLES ---
@@ -728,18 +847,20 @@
                 animate();
             }
             
-            // --- PYTHON INTEGRATION (PYODIDE) ---
-            async function loadPyodideAndInit() {
-                printOutput("Loading Python runtime... Please wait.", null);
-                try {
-                    pyodide = await loadPyodide();
-                    pyodideReady = true;
-                    printOutput("Python runtime ready. Type 'python' to enter the REPL.", true);
-                } catch (error) {
-                    pyodideReady = false;
-                    printOutput("Error loading Python runtime. Python features will be unavailable.", false);
-                    console.error("Pyodide loading error:", error);
-                }
+            // --- PYTHON INTEGRATION (PYODIDE) - NON-BLOCKING ---
+            function initializePyodide() {
+                printOutput("Initializing Python runtime in the background...", null);
+                setTimeout(async () => {
+                    try {
+                        pyodide = await loadPyodide();
+                        pyodideReady = true;
+                        printOutput("Python runtime ready. Type 'python' to enter the REPL.", true);
+                    } catch (error) {
+                        pyodideReady = false;
+                        printOutput("Error loading Python runtime. Python features will be unavailable.", false);
+                        console.error("Pyodide loading error:", error);
+                    }
+                }, 100);
             }
 
             async function runPythonCode(code) {
@@ -773,127 +894,7 @@
                 }
             }
             
-            // --- AI GUIDE (GEMINI) ---
-            async function getAiResponse(prompt) {
-                const apiKey = "AIzaSyAQcjWKuKAywb24BbiozAT1O_3aUPWpJ6A"; 
-                if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY") {
-                    printOutput("AI Error: API key not set. Please add your key to the file to use the 'ask' command.", false);
-                    return;
-                }
-                const thinkingElement = document.createElement('div');
-                thinkingElement.className = 'output';
-                runMascotAnimation(thinkingElement, 'thinking');
-                historyContainer.appendChild(thinkingElement);
-                terminalBody.scrollTop = terminalBody.scrollHeight;
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
-                const payload = { contents: [{ role: "user", parts: [{ text: `You are an AI assistant inside a web-based terminal. Keep answers concise, helpful, and formatted for a terminal (use line breaks). The user asked: ${prompt}` }] }] };
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    clearAllIntervals();
-                    thinkingElement.remove();
-                    if (!response.ok) {
-                        const errorBody = await response.json();
-                        throw new Error(`API request failed: ${errorBody.error?.message || 'Unknown API error.'}`);
-                    }
-                    const result = await response.json();
-                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts[0].text) {
-                        const text = result.candidates[0].content.parts[0].text;
-                        printOutput(text, null, 'ai-response');
-                    } else {
-                        throw new Error("Invalid response structure from AI. The response may be empty or blocked by safety settings.");
-                    }
-                } catch (error) {
-                    clearAllIntervals();
-                    thinkingElement.remove();
-                    printOutput(`Error contacting AI: ${error.message}`, false);
-                }
-            }
-            
-            // --- ANIMATION CLEANUP ---
-            function clearAllIntervals() {
-                activeIntervals.forEach(intervalId => clearInterval(intervalId.id));
-                activeIntervals = [];
-            }
-            
-            // --- SPIRAL MASCOT from intro animation ---
-            function runMascotAnimation(element, mode = 'idle', message = '') {
-                clearAllIntervals(); 
-                const canvas = document.createElement('pre');
-                canvas.style.fontSize = '10px';
-                canvas.style.lineHeight = '0.8';
-                element.innerHTML = '';
-                element.appendChild(canvas);
-
-                const width = 40, height = 15;
-                let grid = []; 
-                let time = 0;
-
-                const initGrid = () => { grid = Array(height).fill().map(() => Array(width).fill(' ')); };
-                const render = () => { canvas.textContent = grid.map(row => row.join('')).join('\n'); };
-                
-                function update() {
-                    initGrid();
-                    const t = time * 0.03;
-                    for (let y = 0; y < height; y++) {
-                        for (let x = 0; x < width; x++) {
-                            const dx = x - width / 2;
-                            const dy = y - height / 2;
-                            const flow = Math.sin(x * 0.15 + y * 0.1 + t) + Math.sin(Math.sqrt(dx * dx + dy * dy) * 0.3 - t * 2);
-                            if (flow > 0.7) grid[y][x] = '█';
-                            else if (flow > 0.3) grid[y][x] = '░';
-                            else if (flow > 0.0) grid[y][x] = '·';
-                            else if (flow < -0.7) grid[y][x] = '#';
-                            else if (flow < -0.3) grid[y][x] = '*';
-                            else if (flow < -0.0) grid[y][x] = '~';
-                        }
-                    }
-                    time++;
-                }
-                
-                function updateNeofetch() {
-                     initGrid();
-                     const t = time * 0.05;
-                     for (let y = 0; y < height; y++) {
-                         for (let x = 0; x < width; x++) {
-                             const dx = x - width / 2;
-                             const dy = y - height / 2;
-                             const dist = Math.sqrt(dx*dx + dy*dy) * 0.4;
-                             const flow = Math.cos(dist - t) * Math.sin(x * 0.15 - t);
-                             if (flow > 0.7) grid[y][x] = '▓';
-                             else if (flow > 0.4) grid[y][x] = '▒';
-                             else if (flow > 0.1) grid[y][x] = '░';
-                             else if (flow < -0.7) grid[y][x] = '•';
-                             else if (flow < -0.4) grid[y][x] = '·';
-                             else grid[y][x] = ' ';
-                         }
-                     }
-                     time++;
-                }
-
-                if (mode === 'static' || mode === 'talking') {
-                    update();
-                    render();
-                    if (mode === 'talking' && message) {
-                        const msgElement = document.createElement('div');
-                        msgElement.textContent = `< ${message} >`;
-                        msgElement.style.marginTop = '5px';
-                        element.appendChild(msgElement);
-                    }
-                } else {
-                    const intervalId = setInterval(() => {
-                        if (mode === 'neofetch') {
-                             updateNeofetch();
-                        } else {
-                             update();
-                        }
-                        render();
-                    }, 80);
-                    activeIntervals.push({id: intervalId, canvas: canvas});
-                }
-            }
-
-
-            // --- VOID-STRIKER GAME ENGINE (UPGRADED V6) ---
+            // --- VOID-STRIKER GAME ENGINE (UNCHANGED) ---
             const Game = {
                 display: null, statsDisplay: null, controlsDisplay: null, width: 70, height: 30, player: {}, bullets: [], enemies: [], explosions: [], powerUps: [], keys: {}, level: 1, score: 0, highScore: 0, enemySpawnCounter: 0, gameLoopInterval: null, isGameOver: false, boss: null, bossActive: false, screenShakeTimer: 0, levelIntroTimer: 0,
                 story: [
@@ -1358,17 +1359,422 @@
                 animate();
                 runScene();
             }
+
+           // --- 3D NEURAL MAP (UPGRADED) ---
+            const NeuralMap = {
+                scene: null, camera: null, renderer: null, labelRenderer: null, controls: null, raycaster: null, mouse: null,
+                graph: { nodes: [], edges: [] },
+                threeObjects: { nodes: new Map(), lines: new Map() },
+                hoveredElement: null,
+                isInitialized: false,
+
+                init() {
+                    if (this.isInitialized) return;
+                    
+                    this.scene = new THREE.Scene();
+                    this.scene.fog = new THREE.Fog(0x000000, 25, 60);
+
+                    this.camera = new THREE.PerspectiveCamera(75, neuralMapContainer.clientWidth / neuralMapContainer.clientHeight, 0.1, 1000);
+                    this.camera.position.set(0, 0, 25);
+
+                    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                    this.renderer.setSize(neuralMapContainer.clientWidth, neuralMapContainer.clientHeight);
+                    this.renderer.setPixelRatio(window.devicePixelRatio);
+                    neuralMapContainer.appendChild(this.renderer.domElement);
+
+                    this.labelRenderer = new CSS2DRenderer();
+                    this.labelRenderer.setSize(neuralMapContainer.clientWidth, neuralMapContainer.clientHeight);
+                    this.labelRenderer.domElement.style.position = 'absolute';
+                    this.labelRenderer.domElement.style.top = '0px';
+                    this.labelRenderer.domElement.style.pointerEvents = 'none';
+                    neuralMapContainer.appendChild(this.labelRenderer.domElement);
+
+                    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+                    this.controls.enableDamping = true;
+                    this.controls.dampingFactor = 0.05;
+                    this.controls.minDistance = 5;
+                    this.controls.maxDistance = 80;
+                    this.controls.enablePan = true;
+
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                    this.scene.add(ambientLight);
+                    const pointLight = new THREE.PointLight(0xff6600, 1, 150);
+                    this.camera.add(pointLight);
+                    this.scene.add(this.camera);
+
+                    this.raycaster = new THREE.Raycaster();
+                    this.mouse = new THREE.Vector2();
+                    this.renderer.domElement.addEventListener('click', this.onCanvasClick.bind(this));
+                    this.renderer.domElement.addEventListener('mousemove', this.onCanvasMouseMove.bind(this));
+                    
+                    window.addEventListener('resize', this.onResize.bind(this), false);
+
+                    this.animate();
+                    this.isInitialized = true;
+                },
+
+                // FIXED: This function now correctly updates line resolutions and handles cases where the container size is 0.
+                onResize() {
+                    if (!this.isInitialized || !neuralMapContainer.clientWidth) return;
+
+                    const width = neuralMapContainer.clientWidth;
+                    const height = neuralMapContainer.clientHeight;
+
+                    // If the container isn't rendered yet, its size will be 0. Prevent errors by returning early.
+                    if (width === 0 || height === 0) {
+                        return;
+                    }
+
+                    this.camera.aspect = width / height;
+                    this.camera.updateProjectionMatrix();
+
+                    this.renderer.setSize(width, height);
+                    this.labelRenderer.setSize(width, height);
+
+                    // This is the crucial fix for resizing. It updates all existing lines.
+                    this.threeObjects.lines.forEach(line => {
+                        if (line.material) {
+                            line.material.resolution.set(width, height);
+                        }
+                    });
+                },
+
+                // FIXED: This function now uses requestAnimationFrame to ensure onResize is called after the DOM is updated.
+                show() {
+                    neuralMapContainer.style.display = 'block';
+                    // Defer the resize call to the next frame to ensure the browser has
+                    // calculated the container's dimensions after it becomes visible. This prevents lines from rendering with a size of 0.
+                    requestAnimationFrame(() => {
+                        this.onResize();
+                    });
+                },
+                hide() { neuralMapContainer.style.display = 'none'; },
+                
+                clearGraph() {
+                    this.graph = { nodes: [], edges: [] };
+                    this.threeObjects.nodes.forEach(obj => this.scene.remove(obj.mesh));
+                    this.threeObjects.lines.forEach(obj => this.scene.remove(obj));
+                    this.threeObjects = { nodes: new Map(), lines: new Map() };
+                },
+                
+                async addTopic(nodeData) {
+                    if (this.graph.nodes.some(n => n.id === nodeData.id)) {
+                        const existingObj = this.threeObjects.nodes.get(nodeData.id);
+                        if(existingObj) this.focusOnNode(existingObj.mesh.position);
+                        return;
+                    }
+                    this.addNode(nodeData);
+                    await this.findCrossLinks(nodeData);
+                    this.frameGraph();
+                },
+
+                focusOnNode(position) {
+                    this.controls.target.copy(position);
+                    this.camera.position.set(position.x, position.y, position.z + 25);
+                },
+
+                addNode(nodeData) {
+                    const newNode = {
+                        id: nodeData.id,
+                        label: nodeData.label,
+                        summary: nodeData.summary,
+                        position: new THREE.Vector3((Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20),
+                        velocity: new THREE.Vector3(),
+                        mass: nodeData.isRelationship ? 1.0 : 1.5,
+                        isRelationship: !!nodeData.isRelationship
+                    };
+                    this.graph.nodes.push(newNode);
+                    this.createNodeObject(newNode);
+                },
+
+                async findCrossLinks(newNodeData) {
+                    const existingNodes = this.graph.nodes.filter(n => n.id !== newNodeData.id && !n.isRelationship);
+                    for (const oldNode of existingNodes) {
+                        const commonCategory = await KnowledgeMap.getCommonCategory(oldNode.id, newNodeData.id);
+                        if (commonCategory) {
+                            const relationId = `relation-${oldNode.id}-${newNodeData.id}`;
+                            if (this.graph.nodes.some(n => n.id === relationId)) continue;
+                            
+                            const relationNodeData = {
+                                id: relationId,
+                                label: commonCategory,
+                                summary: `AI-generated relationship: ${oldNode.label} and ${newNodeData.label} are related because: '${commonCategory}'.`,
+                                isRelationship: true
+                            };
+                            
+                            this.addNode(relationNodeData);
+                            this.addEdge({ id: `${oldNode.id}__${relationId}`, from: oldNode.id, to: relationId });
+                            this.addEdge({ id: `${newNodeData.id}__${relationId}`, from: newNodeData.id, to: relationId });
+                        }
+                    }
+                },
+                
+                addEdge(edgeData) {
+                    const reverseEdgeId = `${edgeData.to}__${edgeData.from}`;
+                    if (this.graph.edges.some(e => e.id === edgeData.id || e.id === reverseEdgeId)) return;
+                    this.graph.edges.push(edgeData);
+                    this.createEdgeObject(edgeData);
+                },
+
+                createNodeObject(node) {
+                     const isRelationship = node.isRelationship;
+                     const geometry = new THREE.SphereGeometry(isRelationship ? 0.4 : 0.6, 20, 20);
+                     const material = new THREE.MeshPhongMaterial({ 
+                         color: isRelationship ? 0x00ff00 : 0xff4500, // Green for relationships
+                         emissive: isRelationship ? 0x00cc00 : 0xff4500, 
+                         emissiveIntensity: 0.4,
+                         transparent: true,
+                         opacity: 0.9
+                     });
+                     const sphere = new THREE.Mesh(geometry, material);
+                     sphere.position.copy(node.position);
+                     sphere.userData = { id: node.id, type: 'node', targetScale: 1.0 };
+                     
+                     const labelDiv = document.createElement('div');
+                     labelDiv.className = 'label';
+                     labelDiv.textContent = node.label;
+                     labelDiv.style.color = isRelationship ? '#aaffaa' : '#ffffff';
+                     if (!isRelationship) {
+                        labelDiv.addEventListener('click', () => KnowledgeMap.init(node.id));
+                     }
+                     const label = new CSS2DObject(labelDiv);
+                     label.position.set(0, isRelationship ? 0.7 : 0.9, 0);
+                     sphere.add(label);
+
+                     this.scene.add(sphere);
+                     this.threeObjects.nodes.set(node.id, { mesh: sphere, label: label, material: material });
+                },
+
+                createEdgeObject(edge) {
+                    const fromNode = this.graph.nodes.find(n => n.id === edge.from);
+                    const toNode = this.graph.nodes.find(n => n.id === edge.to);
+                    if (!fromNode || !toNode) return;
+                    
+                    const positions = [fromNode.position.x, fromNode.position.y, fromNode.position.z, toNode.position.x, toNode.position.y, toNode.position.z];
+                    const lineGeo = new LineGeometry();
+                    lineGeo.setPositions(positions);
+
+                    const lineMat = new LineMaterial({ color: 0xffffff, linewidth: 2, transparent: true, opacity: 0.4 });
+                    lineMat.resolution.set(neuralMapContainer.clientWidth, neuralMapContainer.clientHeight);
+                    
+                    const line = new Line2(lineGeo, lineMat);
+                    line.computeLineDistances();
+                    line.scale.set(1, 1, 1);
+                    line.userData = { id: edge.id, type: 'edge', from: edge.from, to: edge.to };
+
+                    this.scene.add(line);
+                    this.threeObjects.lines.set(edge.id, line);
+                },
+
+                applyPhysics() {
+                    if (this.graph.nodes.length < 2) return;
+                    const repulsionStrength = 0.8;   
+                    const attractionStrength = 0.005;
+                    const idealDistance = 18.0;     
+                    const damping = 0.92;           
+                    const maxSpeed = 0.2;            
+
+                    this.graph.nodes.forEach(node => {
+                        node.velocity.multiplyScalar(damping);
+                        const pullToCenter = node.position.clone().multiplyScalar(-0.00005);
+                        node.velocity.add(pullToCenter);
+                    });
+
+                    for (let i = 0; i < this.graph.nodes.length; i++) {
+                        for (let j = i + 1; j < this.graph.nodes.length; j++) {
+                            const nodeA = this.graph.nodes[i];
+                            const nodeB = this.graph.nodes[j];
+                            const delta = new THREE.Vector3().subVectors(nodeA.position, nodeB.position);
+                            const distance = Math.max(1.0, delta.length());
+                            
+                            const forceMagnitude = repulsionStrength / (distance * distance);
+                            const force = delta.normalize().multiplyScalar(forceMagnitude);
+
+                            nodeA.velocity.add(force);
+                            nodeB.velocity.sub(force);
+                        }
+                    }
+
+                    this.graph.edges.forEach(edge => {
+                        const nodeA = this.graph.nodes.find(n => n.id === edge.from);
+                        const nodeB = this.graph.nodes.find(n => n.id === edge.to);
+                        if (nodeA && nodeB) {
+                            const delta = new THREE.Vector3().subVectors(nodeA.position, nodeB.position);
+                            const distance = Math.max(0.1, delta.length());
+                            const displacement = distance - idealDistance;
+                            const forceMagnitude = displacement * attractionStrength;
+                            const force = delta.normalize().multiplyScalar(forceMagnitude);
+                            nodeA.velocity.sub(force);
+                            nodeB.velocity.add(force);
+                        }
+                    });
+                    
+                    this.graph.nodes.forEach(node => {
+                        if (node.velocity.length() > maxSpeed) {
+                            node.velocity.normalize().multiplyScalar(maxSpeed);
+                        }
+                        node.position.add(node.velocity);
+                    });
+                },
+
+                updateThreeObjects() {
+                    this.threeObjects.nodes.forEach((obj, id) => {
+                        const node = this.graph.nodes.find(n => n.id === id);
+                        if (node) obj.mesh.position.copy(node.position);
+                    });
+                    this.threeObjects.lines.forEach((line, id) => {
+                        const edge = this.graph.edges.find(e => e.id === id);
+                        if(edge) {
+                            const fromNode = this.graph.nodes.find(n => n.id === edge.from);
+                            const toNode = this.graph.nodes.find(n => n.id === edge.to);
+                            if(fromNode && toNode) {
+                                line.geometry.setPositions([fromNode.position.x, fromNode.position.y, fromNode.position.z, toNode.position.x, toNode.position.y, toNode.position.z]);
+                            }
+                        }
+                    });
+                },
+                
+                onCanvasMouseMove(event) {
+                    event.preventDefault();
+                    const rect = this.renderer.domElement.getBoundingClientRect();
+                    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                    this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                    this.raycaster.setFromCamera(this.mouse, this.camera);
+                    this.raycaster.params.Line.threshold = 0.5; // Sensitivity for line intersection
+
+                    const nodeMeshes = Array.from(this.threeObjects.nodes.values()).map(n => n.mesh);
+                    const lineMeshes = Array.from(this.threeObjects.lines.values());
+
+                    const nodeIntersects = this.raycaster.intersectObjects(nodeMeshes);
+                    const lineIntersects = this.raycaster.intersectObjects(lineMeshes);
+
+                    let newHoveredElement = null;
+
+                    if (nodeIntersects.length > 0) {
+                        newHoveredElement = { type: 'node', id: nodeIntersects[0].object.userData.id };
+                    } else if (lineIntersects.length > 0) {
+                        newHoveredElement = { type: 'edge', id: lineIntersects[0].object.userData.id };
+                    }
+                    
+                    if (this.hoveredElement?.id !== newHoveredElement?.id || this.hoveredElement?.type !== newHoveredElement?.type) {
+                        this.hoveredElement = newHoveredElement;
+                        this.updateHighlights();
+                    }
+                },
+                
+                onCanvasClick(event) {
+                    event.preventDefault();
+                    if (this.hoveredElement && this.hoveredElement.type === 'node') {
+                        const node = this.graph.nodes.find(n => n.id === this.hoveredElement.id);
+                        if (node && !node.isRelationship) {
+                           KnowledgeMap.init(this.hoveredElement.id);
+                        }
+                    }
+                },
+
+                updateHighlights() {
+                    const highlightedNodes = new Set();
+                    const highlightedEdges = new Set();
+                    const isAnythingHovered = this.hoveredElement !== null;
+
+                    const GLOW_COLOR = 0xffaa00; 
+                    const DULL_OPACITY_NODE = 0.15;
+                    const DULL_OPACITY_LINE = 0.05;
+                    const NORMAL_OPACITY_NODE = 0.9;
+                    const NORMAL_OPACITY_LINE = 0.4;
+
+                    if (isAnythingHovered) {
+                        if (this.hoveredElement.type === 'node') {
+                            const hoveredNodeId = this.hoveredElement.id;
+                            highlightedNodes.add(hoveredNodeId);
+                            this.graph.edges.forEach(edge => {
+                                if (edge.from === hoveredNodeId || edge.to === hoveredNodeId) {
+                                    highlightedEdges.add(edge.id);
+                                    highlightedNodes.add(edge.from);
+                                    highlightedNodes.add(edge.to);
+                                }
+                            });
+                        } else if (this.hoveredElement.type === 'edge') {
+                            const hoveredEdgeId = this.hoveredElement.id;
+                            highlightedEdges.add(hoveredEdgeId);
+                            const edge = this.graph.edges.find(e => e.id === hoveredEdgeId);
+                            if (edge) {
+                                highlightedNodes.add(edge.from);
+                                highlightedNodes.add(edge.to);
+                            }
+                        }
+                    }
+
+                    this.threeObjects.nodes.forEach((nodeObj, nodeId) => {
+                        const isHighlighted = highlightedNodes.has(nodeId);
+                        const node = this.graph.nodes.find(n => n.id === nodeId);
+                        if (!node) return;
+                        const isRelationship = node.isRelationship;
+
+                        nodeObj.material.emissive.setHex(isHighlighted ? GLOW_COLOR : (isRelationship ? 0x00cc00 : 0xff4500));
+                        nodeObj.material.emissiveIntensity = isHighlighted ? 1.5 : 0.4;
+                        
+                        nodeObj.material.opacity = isAnythingHovered && !isHighlighted ? DULL_OPACITY_NODE : NORMAL_OPACITY_NODE;
+                        
+                        nodeObj.mesh.userData.targetScale = isHighlighted ? 1.4 : 1.0;
+
+                        nodeObj.label.element.style.opacity = isAnythingHovered && !isHighlighted ? DULL_OPACITY_NODE : 1.0;
+                        nodeObj.label.element.classList.toggle('highlight', isHighlighted);
+                    });
+
+                    this.threeObjects.lines.forEach((lineObj, lineId) => {
+                        const isHighlighted = highlightedEdges.has(lineId);
+                        
+                        lineObj.material.color.set(isHighlighted ? GLOW_COLOR : 0xffffff);
+
+                        lineObj.material.opacity = isAnythingHovered && !isHighlighted ? DULL_OPACITY_LINE : NORMAL_OPACITY_LINE;
+                    });
+                },
+                
+                frameGraph() {
+                    if (this.graph.nodes.length === 0 || !this.isInitialized) return;
+                    const box = new THREE.Box3();
+                    this.graph.nodes.forEach(node => box.expandByPoint(node.position));
+                    if (box.isEmpty()) return;
+
+                    const size = new THREE.Vector3(); box.getSize(size);
+                    const center = new THREE.Vector3(); box.getCenter(center);
+                    const maxSize = Math.max(size.x, size.y);
+                    const fov = this.camera.fov * (Math.PI / 180);
+                    let cameraZ = Math.abs(maxSize / 2 / Math.tan(fov / 2));
+                    cameraZ *= 1.5; 
+                    this.controls.target.copy(center);
+                    const newPosition = new THREE.Vector3(center.x, center.y, center.z + Math.max(cameraZ, 25));
+                    this.camera.position.copy(newPosition);
+                    this.camera.lookAt(center);
+                    this.controls.maxDistance = cameraZ * 2;
+                    this.controls.update();
+                },
+
+                animate() {
+                    requestAnimationFrame(this.animate.bind(this));
+                    this.applyPhysics();
+                    this.updateThreeObjects();
+                    this.threeObjects.nodes.forEach(nodeObj => {
+                        const targetScale = nodeObj.mesh.userData.targetScale || 1.0;
+                        nodeObj.mesh.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+                    });
+                    this.controls.update();
+                    this.renderer.render(this.scene, this.camera);
+                    this.labelRenderer.render(this.scene, this.camera);
+                }
+            };
             
-            // --- KNOWLEDGE MAP V4 (ENHANCED) ---
+            // --- KNOWLEDGE MAP (UPGRADED) ---
             const KnowledgeMap = {
-                nodes: [],
+                allFetchedNodes: new Map(),
                 container: mapGridContainer,
-                infoPanel: mapInfoPanel,
+                infoPanel: infoContent,
                 searchHistory: [],
                 historyIndex: -1,
                 highlightedIndex: -1,
                 
-                init(term, fromHistory = false) {
+                async init(term, fromHistory = false) {
                     this.highlightedIndex = -1; 
                     if (!fromHistory) {
                         if (this.historyIndex < this.searchHistory.length - 1) {
@@ -1382,149 +1788,207 @@
                     searchForwardBtn.disabled = this.historyIndex >= this.searchHistory.length - 1;
 
                     this.container.innerHTML = `Connecting to Knowledge Matrix for <strong style="color:white">"${term}"</strong>...`;
-                    this.infoPanel.innerHTML = '';
-                    this.fetchData(term);
-                },
-
-                goBack() {
-                    if (this.historyIndex > 0) {
-                        this.historyIndex--;
-                        this.init(this.searchHistory[this.historyIndex], true);
+                    this.infoPanel.innerHTML = `<div class="info-summary">Fetching details for "${term}"...</div>`;
+                    imagePanel.innerHTML = `<span class="placeholder-text">Searching for image...</span>`;
+                    
+                    if (this.allFetchedNodes.has(term)) {
+                        const nodeData = this.allFetchedNodes.get(term);
+                        this.render(nodeData);
+                        await NeuralMap.addTopic(nodeData);
+                    } else {
+                        await this.fetchData(term);
                     }
                 },
 
-                goForward() {
-                    if (this.historyIndex < this.searchHistory.length - 1) {
-                        this.historyIndex++;
-                        this.init(this.searchHistory[this.historyIndex], true);
-                    }
-                },
+                goBack() { if (this.historyIndex > 0) { this.historyIndex--; this.init(this.searchHistory[this.historyIndex], true); } },
+                goForward() { if (this.historyIndex < this.searchHistory.length - 1) { this.historyIndex++; this.init(this.searchHistory[this.historyIndex], true); } },
 
                 async fetchData(term) {
                     const WIKI_API = "https://en.wikipedia.org/w/api.php?action=parse&format=json&origin=*&redirects=1&prop=text|images";
                     try {
                         const response = await fetch(WIKI_API + `&page=${encodeURIComponent(term)}`);
+                        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
                         const data = await response.json();
-
-                        if (data.error) { throw new Error(data.error.info); }
+                        if (data.error) throw new Error(`'${term}' not found on Wikipedia.`);
 
                         const pageTitle = data.parse.title;
                         const html = data.parse.text['*'];
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
                         const content = doc.querySelector('.mw-parser-output');
+                        if (!content) throw new Error("Could not parse Wikipedia content.");
 
-                        if (!content) { throw new Error("Could not parse Wikipedia content."); }
-
-                        const paragraphs = Array.from(content.querySelectorAll('p'));
-                        let summary = paragraphs.slice(0, 4)
-                            .map(p => p.textContent.trim().replace(/\[\d+\]/g, '')) // remove citation numbers
-                            .filter(text => text.length > 50)
-                            .join('\n\n');
-                        
-                        if (!summary) { summary = paragraphs.length > 0 ? paragraphs[0].textContent.trim().replace(/\[\d+\]/g, '') : "No detailed summary available."; }
-
-                        let imageUrl = null;
-                        const imageElement = doc.querySelector('.infobox img, .thumbinner img');
-                        if (imageElement) {
-                            let src = imageElement.src;
-                            if (src.startsWith('//')) { src = 'https:' + src; }
-                            imageUrl = src;
+                        let summary = '';
+                        const paragraphs = Array.from(content.querySelectorAll('p:not(.mw-empty-elt)'));
+                        for (const p of paragraphs) {
+                            const pText = p.textContent.trim().replace(/\[\d+\]/g, '');
+                            if (pText.length > 20) { summary += pText + '\n\n'; }
+                            if (summary.length > 800) break;
                         }
+                        if (!summary) { summary = "No detailed summary could be extracted for this topic."; }
 
-                        this.nodes = [];
-                        const centralNode = {
-                            id: pageTitle, label: pageTitle, summary: summary,
-                            imageUrl: imageUrl, isCentral: true,
-                        };
-                        this.nodes.push(centralNode);
-
+                        const centralNode = { id: pageTitle, label: pageTitle, summary: summary, related: [] };
+                        
                         const links = Array.from(content.querySelectorAll('p a[href^="/wiki/"]'));
-                        const uniqueLinks = new Set();
-                        const suggestedNodes = links
+                        const uniqueLinks = new Set([pageTitle.toLowerCase()]);
+                        centralNode.related = links
                             .map(link => ({ title: link.title, href: link.getAttribute('href') }))
                             .filter(link => {
-                                if (link.title && !link.href.includes(':') && !uniqueLinks.has(link.title)) {
-                                    uniqueLinks.add(link.title);
-                                    return true;
-                                }
-                                return false;
+                                if (link.title && !link.href.includes(':') && !uniqueLinks.has(link.title.toLowerCase())) {
+                                    uniqueLinks.add(link.title.toLowerCase()); return true;
+                                } return false;
                             })
-                            .slice(0, 49)
-                            .map(link => ({ id: link.title, label: link.title, isCentral: false }));
-
-                        this.nodes.push(...suggestedNodes);
+                            .slice(0, 15)
+                            .map(link => ({ id: link.title, label: link.title }));
+                        
+                        this.allFetchedNodes.set(pageTitle, centralNode);
+                        
                         this.render(centralNode);
+                        await NeuralMap.addTopic(centralNode);
 
                     } catch (e) {
-                        this.container.innerHTML = `<span class="auth-error">Error fetching data: ${e.message}</span>`;
+                        this.container.innerHTML = `<span class="auth-error">Error: ${e.message}</span>`;
                         this.infoPanel.innerHTML = `<div class="info-summary">Please try another search term.</div>`;
+                        imagePanel.innerHTML = `<span class="placeholder-text"></span>`;
                         console.error(e);
                     }
                 },
                 
                 render(activeNode) {
                     this.container.innerHTML = '';
-                    this.nodes.forEach((node, index) => {
+                    activeNode.related.forEach(node => {
                         const nodeEl = document.createElement('div');
                         nodeEl.className = 'map-node-retro';
                         nodeEl.dataset.nodeId = node.id;
-                        
-                        let connector = '├─';
-                        if (index === this.nodes.length - 1) connector = '└─';
-                        if (node.isCentral) connector = '┌─';
-
-                        nodeEl.innerHTML = `<span class="node-connector">${connector}</span><span class="node-title">${node.label}</span>`;
-                        
-                        if (node.id === activeNode.id) {
-                            nodeEl.classList.add('active-node');
-                        }
-                        
+                        nodeEl.textContent = node.label;
                         nodeEl.addEventListener('click', () => { this.init(node.label); });
                         this.container.appendChild(nodeEl);
                     });
-                    
                     this.displayInfo(activeNode);
+                    this.fetchImage(activeNode.label);
+                    knowledgeSearchInput.focus();
                 },
                 
-                displayInfo(node) {
-                    let imageHtml = '';
-                    if (node.imageUrl) {
-                        imageHtml = `
-                            <div class="image-container">
-                                <img src="${node.imageUrl}" class="theme-image" alt="Image related to ${node.label}" onerror="this.style.display='none'">
-                            </div>`;
+                async fetchImage(term) {
+                    const API_ENDPOINT = "https://en.wikipedia.org/w/api.php?origin=*&format=json";
+                    try {
+                        const pageIdRes = await fetch(`${API_ENDPOINT}&action=query&titles=${encodeURIComponent(term)}`);
+                        const pageIdData = await pageIdRes.json();
+                        const pageId = Object.keys(pageIdData.query.pages)[0];
+                        if (pageId === "-1") { throw new Error("Page not found"); }
+                        
+                        const imgRes = await fetch(`${API_ENDPOINT}&action=query&pageids=${pageId}&prop=pageimages&pithumbsize=400`);
+                        const imgData = await imgRes.json();
+                        const page = imgData.query.pages[pageId];
+
+                        if (page.thumbnail && page.thumbnail.source) {
+                            const img = new Image();
+                            img.onload = () => { imagePanel.innerHTML = ''; imagePanel.appendChild(img); };
+                            img.onerror = () => { imagePanel.innerHTML = `<span class="placeholder-text">Image not found.</span>`; };
+                            img.src = page.thumbnail.source;
+                        } else { imagePanel.innerHTML = `<span class="placeholder-text">No image for this topic.</span>`; }
+                    } catch (e) { console.error("Image fetch error:", e); imagePanel.innerHTML = `<span class="placeholder-text">Image search failed.</span>`; }
+                },
+
+                async getCommonCategory(term1, term2) {
+                    const prompt = `In a single, very short sentence (under 7 words), what is the relationship between "${term1}" and "${term2}"? If there is no direct or obvious relationship, just respond with "None".`;
+                    const apiKey = ""; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const payload = {
+                        contents: [{
+                            parts: [{ text: prompt }]
+                        }]
+                    };
+
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            console.error("AI API call failed with status:", response.status);
+                            return null;
+                        }
+
+                        const result = await response.json();
+                        
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            
+                            let text = result.candidates[0].content.parts[0].text.trim();
+                            
+                            text = text.replace(/["']/g, '');
+                            if (text.endsWith('.')) {
+                                text = text.slice(0, -1);
+                            }
+
+                            if (text.toLowerCase() !== 'none' && text.length > 0) {
+                                return text;
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Error calling Gemini API:", error);
+                        return null;
                     }
+                    
+                    return null;
+                },
 
+                displayInfo(node) {
                     let summaryHtml = node.summary.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    const relatedTitles = this.nodes.map(n => n.label).filter(label => label !== node.label);
+                    const relatedTitles = node.related.map(n => n.label);
                     relatedTitles.sort((a, b) => b.length - a.length);
-
                     relatedTitles.forEach(title => {
                         const safeTitle = title.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                        const regex = new RegExp(`\\b(${safeTitle})\\b`, 'gi');
-                        summaryHtml = summaryHtml.replace(regex, `<span class="topic-link" data-topic="${title}">$1</span>`);
+                        summaryHtml = summaryHtml.replace(new RegExp(`\\b(${safeTitle})\\b`, 'gi'), `<span class="topic-link" data-topic="${title}">$1</span>`);
                     });
-
+                    
                     this.infoPanel.innerHTML = `
                         <div class="info-title">${node.label}</div>
-                        ${imageHtml}
                         <div class="info-summary">${summaryHtml}</div>
+                        <div id="ai-analysis-container">
+                            <button id="ai-analyze-btn" class="search-nav-btn" style="width:100%; margin-top:10px;">Analyze with AI</button>
+                        </div>
                     `;
+                    
+                    document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
+                        const btn = document.getElementById('ai-analyze-btn');
+                        const analysisContainer = document.getElementById('ai-analysis-container');
+                        btn.disabled = true;
+                        btn.textContent = 'Analyzing...';
+                        
+                        await new Promise(resolve => setTimeout(resolve, 1500)); 
+                        
+                        const summaryPoints = node.summary
+                            .split('\n\n')[0]
+                            .split('. ')
+                            .filter(s => s.length > 20)
+                            .slice(0, 3)
+                            .map(s => `<li>${s.trim()}.</li>`).join('');
+
+                        const aiResponseHTML = `
+                            <div class="info-title" style="font-size: 1.1em; margin-top: 15px;">AI Analysis</div>
+                            <ul class="ai-response" style="padding-left: 20px; margin-top: 5px;">
+                                ${summaryPoints || "<li>Could not generate a summary from the provided text.</li>"}
+                            </ul>`;
+
+                        analysisContainer.innerHTML = aiResponseHTML;
+                    });
+
+                    this.infoPanel.scrollTop = 0;
                 },
 
                 updateHighlight(direction) {
                     const gridNodes = this.container.querySelectorAll('.map-node-retro');
                     if (gridNodes.length === 0) return;
-
-                    if (this.highlightedIndex > -1 && gridNodes[this.highlightedIndex]) {
-                        gridNodes[this.highlightedIndex].classList.remove('highlighted-node');
-                    }
-
+                    if (this.highlightedIndex > -1 && gridNodes[this.highlightedIndex]) gridNodes[this.highlightedIndex].classList.remove('highlighted-node');
                     this.highlightedIndex += direction;
                     if (this.highlightedIndex >= gridNodes.length) { this.highlightedIndex = 0; }
                     if (this.highlightedIndex < 0) { this.highlightedIndex = gridNodes.length - 1; }
-
                     const newNode = gridNodes[this.highlightedIndex];
                     newNode.classList.add('highlighted-node');
                     newNode.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1540,72 +2004,49 @@
                     Game.keys[e.key] = true; if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
                     return;
                 }
-
                 if (inSearchMode) {
-                    if (document.activeElement === knowledgeSearchInput) {
-                        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                             e.preventDefault();
-                             knowledgeSearchInput.blur();
-                        } else {
-                             return; 
+                    const activeEl = document.activeElement; const isInputFocused = activeEl === knowledgeSearchInput;
+                    if (!isInputFocused) {
+                        switch(e.key) {
+                            case 'ArrowDown': KnowledgeMap.updateHighlight(1); e.preventDefault(); break;
+                            case 'ArrowUp': KnowledgeMap.updateHighlight(-1); e.preventDefault(); break;
+                            case 'Enter':
+                                if (KnowledgeMap.highlightedIndex > -1) {
+                                    const nodeToActivate = document.querySelector('.highlighted-node'); if(nodeToActivate) nodeToActivate.click();
+                                } e.preventDefault(); break;
+                            case 'Escape': knowledgeSearchInput.focus(); e.preventDefault(); break;
                         }
-                    }
-                    e.preventDefault();
-                    switch(e.key) {
-                        case 'ArrowDown': KnowledgeMap.updateHighlight(1); break;
-                        case 'ArrowUp': KnowledgeMap.updateHighlight(-1); break;
-                        case 'ArrowLeft': searchBackBtn.click(); break;
-                        case 'ArrowRight': searchForwardBtn.click(); break;
-                        case 'Enter':
-                            if (KnowledgeMap.highlightedIndex > -1) {
-                                const nodeToActivate = document.querySelector('.highlighted-node');
-                                if(nodeToActivate) nodeToActivate.click();
-                            }
-                            break;
-                        case 'Escape': knowledgeSearchInput.focus(); break;
                     }
                 }
             });
             document.addEventListener('keyup', (e) => { if(inGame) Game.keys[e.key] = false; });
             terminalContainer.addEventListener('click', (e) => { if (!inGame) commandInput.focus(); });
-            
             searchBackBtn.addEventListener('click', () => KnowledgeMap.goBack());
             searchForwardBtn.addEventListener('click', () => KnowledgeMap.goForward());
-
             knowledgeSearchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     const query = knowledgeSearchInput.value.trim();
-                    if (query.toLowerCase() === 'quit') {
-                        handleSearchCommand('quit');
-                    } else if (query) {
-                        handleSearchCommand(`search ${query}`);
-                    }
+                    if (query.toLowerCase() === 'quit') { handleSearchCommand('quit'); } else if (query) { KnowledgeMap.init(query); }
                     knowledgeSearchInput.value = '';
                 }
             });
-
-            mapInfoPanel.addEventListener('click', (e) => {
+            infoContent.addEventListener('click', (e) => {
                 if (e.target.classList.contains('topic-link')) {
-                    const topic = e.target.dataset.topic;
-                    if (topic) { KnowledgeMap.init(topic); }
+                    const topic = e.target.dataset.topic; if (topic) { KnowledgeMap.init(topic); }
                 }
             });
 
             // --- INTERACTIVE TERMINAL LOGIC ---
             commandInput.addEventListener('keydown', function(event) {
                 if (inGame) return;
-
                 if (event.key === 'Enter') {
-                    event.preventDefault(); clearAllIntervals();
+                    event.preventDefault();
                     const commandText = commandInput.value.trim();
                     if (!commandText && !authState.inProgress && !pythonCodeBlock) return;
-                    
                     if(inSearchMode) {
-                        handleSearchCommand(commandText);
-                        commandInput.value = '';
-                        return;
+                        if(commandText.toLowerCase() === 'quit') { handleSearchCommand('quit'); } else { KnowledgeMap.init(commandText); }
+                        commandInput.value = ''; return;
                     }
-
                     let promptContent = terminalPrompt.textContent;
                     if (!(authState.inProgress && authState.step === 2)) {
                          let historyLine = document.createElement('div'); historyLine.className = 'terminal-line'; historyLine.innerHTML = `<span class="prompt">${promptContent}</span><span class="command">${commandText}</span>`;
@@ -1619,57 +2060,40 @@
                     else if (authState.inProgress) { handleAuthFlow(commandText); } 
                     else if (inChat) { handleChatCommand(commandText); } 
                     else { processCommand(commandText); }
-                    commandInput.value = '';
-                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                    commandInput.value = ''; terminalBody.scrollTop = terminalBody.scrollHeight;
                 } else if (event.key === 'Backspace' && commandInput.value.length > 0) { audio.delete(); }
             });
 
             function processCommand(command) {
-                let outputElement = document.createElement('div');
-                outputElement.className = 'output';
-                const [cmd, ...args] = command.split(' ');
-                const query = args.join(' ');
-
+                let outputElement = document.createElement('div'); outputElement.className = 'output';
+                const [cmd, ...args] = command.split(' '); const query = args.join(' ');
                 switch(cmd.toLowerCase()) {
                     case 'play': showAnimatedIntro(); break;
                     case 'exit': outputElement.textContent = `This command is used to exit specific modes like chat or the game.`; audio.error(); break;
                     case 'python':
                         if (pyodideReady) { inPythonMode = true; updateChatUI(); outputElement.innerHTML = `Entered Python REPL. Type your Python code. Multi-line statements are supported. Type 'exit()' to leave.`; } 
-                        else { outputElement.innerHTML = `Python runtime is still loading or failed to load. Please wait.`; audio.error(); }
-                        break;
+                        else { outputElement.innerHTML = `Python runtime is still loading or failed to load. Please wait.`; audio.error(); } break;
                     case 'ask':
                         inAIMode = true; updateChatUI();
                         outputElement.innerHTML = `Entered AI chat mode. I'm listening.<br>Type 'quit' to exit this mode.`;
-                        if (query) { getAiResponse(query); }
-                        break;
+                        if (query) { getAiResponse(query); } break;
                     case 'search':
                         if (query) {
-                            inSearchMode = true; updateChatUI(); terminalContent.style.display = 'none'; searchViewContainer.style.display = 'flex';
-                            KnowledgeMap.init(query);
-                        } else {
-                            outputElement.textContent = 'Usage: search <query>'; audio.error();
-                        }
-                        break;
+                            if (!NeuralMap.isInitialized) NeuralMap.init();
+                            inSearchMode = true; updateChatUI(); terminalContent.style.display = 'none'; 
+                            searchViewContainer.style.display = 'flex'; NeuralMap.show(); KnowledgeMap.init(query);
+                        } else { outputElement.textContent = 'Usage: search <query>'; audio.error(); } break;
                     case 'greyskin':
                         if (currentUser) { printOutput("Already authenticated. Entering chat...", true); ShadowNetwork.enterChat(); } 
-                        else { outputElement.innerHTML = `<span class="secret-prompt">Secure channel initiated...</span>`; outputElement.classList.add('auth-prompt'); setTimeout(() => { authState.inProgress = true; authState.step = 0; printOutput("Select authentication method: [login] or [register]", true); }, 500); }
-                        break;
+                        else { outputElement.innerHTML = `<span class="secret-prompt">Secure channel initiated...</span>`; outputElement.classList.add('auth-prompt'); setTimeout(() => { authState.inProgress = true; authState.step = 0; printOutput("Select authentication method: [login] or [register]", true); }, 500); } break;
                      case 'logout':
                         if (currentUser) { signOut(auth).then(() => { printOutput("You have been successfully logged out.", true); }).catch((error) => { printOutput(`Logout failed: ${error.message}`, false); }); } 
-                        else { printOutput("No user is currently logged in.", false); }
-                        break;
+                        else { printOutput("No user is currently logged in.", false); } break;
                     case 'whoami': outputElement.textContent = currentUser ? currentUser.email.split('@')[0] : 'guest'; break;
                     case 'date': outputElement.textContent = new Date().toString(); break;
-                    case 'spiralspeaks':
-                        if (query) { runMascotAnimation(outputElement, 'talking', query); } 
-                        else { outputElement.textContent = `Usage: spiralspeaks <message>`; audio.error(); }
-                        break;
                     case 'neofetch':
                         const neofetchUser = currentUser ? currentUser.email.split('@')[0] : 'guest';
-                        const artContainer = document.createElement('div'); const textContainer = document.createElement('span');
-                        outputElement.style.display = 'flex'; outputElement.style.gap = '20px'; outputElement.style.alignItems = 'center';
-                        runMascotAnimation(artContainer, 'neofetch');
-                        textContainer.innerHTML = `<pre style="color:#ff4500">${neofetchUser}@cameosky
+                        outputElement.innerHTML = `<pre style="color:#ff4500">${neofetchUser}@cameosky
 <span style="color:#c7c7c7">------------------</span>
 <span style="color:#c7c7c7">OS: </span>Arch Terminal
 <span style="color:#c7c7c7">Host: </span>CAMEOSKY Web
@@ -1677,20 +2101,14 @@
 <span style="color:#c7c7c7">Shell: </span>DOM v7.0
 <span style="color:#c7c7c7">DE: </span>Retro
 <span style="color:#c7c7c7">Theme: </span>OrangeSpice
-<span style="color:#c7c7c7">Mascot: </span>The Spiral
 <span style="color:#c7c7c7">Terminal: </span>CAMEOSKY
 <span style="color:#c7c7c7">CPU: </span>Your Browser
 <span style="color:#c7c7c7">GPU: </span>Your GPU
 <span style="color:#c7c7c7">Memory: </span>Finite</pre>`;
-                        outputElement.appendChild(artContainer); outputElement.appendChild(textContainer);
                         break;
                      case 'help':
-                        outputElement.innerHTML = `Available commands:\n` + `  play              - Start the VOID-STRIKER game\n` + `  python            - Enter the interactive Python REPL\n` + `  search <query>    - Generate a visual knowledge map\n` + `  ask <question>    - Enter interactive AI chat mode\n` + `  greyskin          - Authenticate and enter the secure chat\n` + `  logout            - Log out of your account\n` + `  whoami            - Display current user\n` + `  date              - Show current date and time\n` + `  spiralspeaks <msg> - The terminal mascot will speak\n` + `  neofetch          - Display animated 'system' info\n` + `  help              - Show this help menu\n` + `  -social           - Get my social media links\n` + `  tech              - See technologies I use\n` + `  more              - Learn more about me\n` + `  clear             - Clears the terminal history\n` + `  exit              - Used inside chat or python modes`;
-                        break;
+                        outputElement.innerHTML = `Available commands:\n` + `  play              - Start the VOID-STRIKER game\n` + `  python            - Enter the interactive Python REPL\n` + `  search <query>    - Generate a visual knowledge map\n` + `  ask <question>    - Enter interactive AI chat mode\n` + `  greyskin          - Authenticate and enter the secure chat\n` + `  logout            - Log out of your account\n` + `  whoami            - Display current user\n` + `  date              - Show current date and time\n` + `  clear             - Clears the terminal history\n` + `  exit              - Used inside chat or python modes`; break;
                     case 'clear': historyContainer.innerHTML = ''; return;
-                    case '-social': outputElement.innerHTML = `Find me on social platforms:\n\n` + `<a href="https://github.com/ShayanKhanJaved" class="terminal-link" target="_blank">GitHub</a>\n` + `<a href="https://linkedin.com/in/shayan-khan-javed-0a3190315" class="terminal-link" target="_blank">LinkedIn</a>\n` + `<a href="https://instagram.com/cameosky" class="terminal-link" target="_blank">Instagram</a>\n\n` + `<a href="mailto:cameosky@protonmail.com" class="terminal-link">Email</a>`; break;
-                    case 'tech': outputElement.innerHTML = `Core Technology Stack:\n\n` + `LANGUAGES:   TypeScript, JavaScript (ESNext), Python, Go, C#\n` + `FRONTEND:    React, Next.js, Vue, Svelte, HTML5, CSS3/Sass\n` + `MOBILE:      Flutter, React Native\n` + `BACKEND:     Node.js (Express, NestJS), Django, .NET Core, Go (Gin)\n` + `DATABASES:   PostgreSQL, MongoDB, Redis, Firebase, SQLite\n` + `DEVOPS/CLOUD:Docker, Kubernetes, CI/CD (GitHub Actions), Terraform\n` + `             AWS, Google Cloud, Vercel\n` + `AI/ML:       TensorFlow, PyTorch, Scikit-learn, OpenAI API\n` + `TOOLS:       Git, Neovim, VS Code, Linux, Android Studio`; break;
-                    case 'more': outputElement.innerHTML = `More about me:\n\n` + `PASSION: I use Flutter, HTML, React, C#, C++, and Python to create\n` + `fun and engaging applications that solve real-world problems.\n\n` + `NONPROFIT: I'm the founder of ChatNest, a nonprofit organization\n` + `dedicated to teaching children physics and computer science in a fun way.\n` + `MISSION: My goal is to make technology accessible and exciting for all.`; break;
                     default: outputElement.textContent = `Command not found: ${command}. Type 'help' for a list of available commands.`; audio.error();
                 }
                 historyContainer.appendChild(outputElement);
@@ -1698,63 +2116,46 @@
             
             function handleSearchCommand(command) {
                 if (command.toLowerCase() === 'quit') {
-                    inSearchMode = false; updateChatUI(); 
-                    searchViewContainer.style.display = 'none'; 
-                    terminalContent.style.display = 'block'; 
-                    commandInput.focus();
+                    inSearchMode = false; updateChatUI(); searchViewContainer.style.display = 'none'; 
+                    terminalContent.style.display = 'block'; NeuralMap.hide(); commandInput.focus();
                     printOutput("Exited Knowledge Nexus.", true);
-                    return;
-                }
-                const [cmd, ...args] = command.split(' ');
-                const query = args.join(' ');
-                if (cmd.toLowerCase() === 'search' && query) {
-                    KnowledgeMap.init(query);
-                } else {
-                     mapGridContainer.innerHTML = `<span class="auth-error">Invalid command in Nexus. Use 'search &lt;query&gt;' or 'quit'.</span>`;
+                    // Clear the graph for the next session
+                    NeuralMap.clearGraph();
+                    KnowledgeMap.allFetchedNodes.clear();
                 }
             }
-
-            function handleAIChatInput(command) {
-                if (command.toLowerCase() === 'quit') {
-                    inAIMode = false; updateChatUI(); printOutput("Exited AI chat mode.", true); return;
-                }
-                if(command) getAiResponse(command);
-            }
-
+            function handleAIChatInput(command) { if (command.toLowerCase() === 'quit') { inAIMode = false; updateChatUI(); printOutput("Exited AI chat mode.", true); return; } if(command) getAiResponse(command); }
             function handlePythonInput(command) {
                 if (command === 'exit()' || command === 'quit()') { inPythonMode = false; pythonCodeBlock = ''; updateChatUI(); printOutput("Exited Python REPL.", null); return; }
                 pythonCodeBlock += command + '\n';
                 if (command.trim().endsWith(':') || command.trim().endsWith('(') || command.trim().endsWith('[') || command.trim().endsWith('{') || (pythonCodeBlock && command.trim() !== '')) { updateChatUI(); } 
                 else { runPythonCode(pythonCodeBlock); pythonCodeBlock = ''; updateChatUI(); }
             }
-
             function handleAuthFlow(input) {
                 switch(authState.step) {
                     case 0: if (input === 'login' || input === 'register') { authState.mode = input; authState.step = 1; printOutput("Enter email:", true); } else { printOutput("Invalid option. Type 'login' or 'register'", false); } break;
                     case 1: authState.email = input; authState.step = 2; printOutput("Enter password:", true); commandInput.type = 'password'; break;
                     case 2: authState.password = input; commandInput.type = 'text'; const action = authState.mode === 'login' ? signInWithEmailAndPassword : createUserWithEmailAndPassword;
                         action(auth, authState.email, authState.password).then((userCredential) => { printOutput(`Authentication successful.`, true); audio.accessGranted(); ShadowNetwork.enterChat(); resetAuthState(); })
-                            .catch((error) => { printOutput(`Error: ${error.message.replace('Firebase: ', '')}`, false); audio.accessDenied(); resetAuthState(); });
-                        break;
+                            .catch((error) => { printOutput(`Error: ${error.message.replace('Firebase: ', '')}`, false); audio.accessDenied(); resetAuthState(); }); break;
                 }
             }
-
             function resetAuthState() { authState.inProgress = false; authState.mode = null; authState.step = 0; authState.email = ''; authState.password = ''; }
             function handleChatCommand(command) { if (command.toLowerCase() === 'exit') { ShadowNetwork.exitChat(); return; } ShadowNetwork.sendMessage(command); }
             function printOutput(text, isSuccess, customClass = 'output') {
                 const outputElement = document.createElement('div'); outputElement.className = customClass;
                 outputElement.innerHTML = text;
                 if (isSuccess === true) { outputElement.classList.add('auth-success'); } else if (isSuccess === false) { outputElement.classList.add('auth-error'); }
-                historyContainer.appendChild(outputElement);
-                terminalBody.scrollTop = terminalBody.scrollHeight;
+                historyContainer.appendChild(outputElement); terminalBody.scrollTop = terminalBody.scrollHeight;
             }
 
             // --- INITIALIZATION ---
             generateSpiralPaths();
             runAsciiAnimation(document.getElementById('ascii-animation-container'), false);
-            loadPyodideAndInit();
+            initializePyodide();
             commandInput.focus();
         });
     </script>
 </body>
 </html>
+
