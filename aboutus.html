@@ -36,18 +36,7 @@
             min-height: 100vh;
             align-items: center;
             justify-content: center;
-        }
-
-        .spiral-nav {
-            position: fixed;
-            top: 50%;
-            left: 90px;
-            width: 80px;
-            height: 80px;
-            transform: translateY(-50%);
-            z-index: 1000;
-            transition: transform 0.3s ease;
-            cursor: pointer;
+            padding: 20px;
         }
 
         .spiral {
@@ -57,9 +46,7 @@
             filter: drop-shadow(0 0 10px #ff4500);
         }
 
-        .spiral-nav:hover .spiral,
-        .spiral-about:hover .spiral,
-        .spiral.paused {
+        .spiral:hover {
             animation-play-state: paused;
         }
 
@@ -70,66 +57,15 @@
             stroke-linecap: round;
         }
 
-        .nav-links {
-            position: fixed;
-            top: 50%;
-            left: 90px;
-            width: 400px;
-            height: 400px;
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-            z-index: 999;
-        }
-
-        .nav-links.show-links {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .nav-link {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            color: #ff4500;
-            text-decoration: none;
-            font-size: 0.9em;
-            padding: 8px 16px;
-            border: 2px solid #ff4500;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-            background: rgba(255, 69, 0, 0.1);
-            backdrop-filter: blur(10px);
-            white-space: nowrap;
-            z-index: 100;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 69, 0, 0.8);
-            color: rgb(255, 255, 255);
-            box-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
-            transform: translate(-50%, -50%) scale(1.1);
-        }
-
-        .spiral-about {
-            position: absolute;
-            top: 75%;
-            left: 85%;
-            width: 50px;
-            height: 50px;
-            cursor: pointer;
-            transform: translate(-50%, -50%);
-            z-index: 101;
-        }
-
         .about-content {
             flex: 1;
-            padding: 40px 20px;
+            padding: 0;
             opacity: 1;
             pointer-events: auto;
             display: flex;
             justify-content: center;
             align-items: center;
+            width: 100%;
         }
 
         .terminal-container {
@@ -159,16 +95,64 @@
             flex-shrink: 0;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between; /* Changed for button alignment */
             gap: 10px;
+            position: relative; 
         }
         
-        #header-logo-container {
-            width: 20px;
-            height: 20px;
+        #header-spiral-link {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            z-index: 10;
+            transition: transform 0.2s ease;
         }
 
-        .terminal-title { color: #ff4500; font-size: 0.9em; font-weight: 500; text-align: center;}
+        #header-spiral-link:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .terminal-title { 
+            color: #ff4500; 
+            font-size: 0.9em; 
+            font-weight: 500; 
+            text-align: center;
+            /* Centering the title absolutely */
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #header-buttons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: auto; /* Pushes buttons to the right */
+        }
+        
+        .header-btn {
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.1), rgba(255, 69, 0, 0.2));
+            border: 1px solid rgba(255, 69, 0, 0.3);
+            color: #ff8c66;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 500;
+            padding: 5px 12px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .header-btn:hover {
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.3), rgba(255, 69, 0, 0.4));
+            border-color: #ff4500;
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+        }
 
         .terminal-body {
             padding: 20px;
@@ -220,7 +204,13 @@
         .output { color: #c7c7c7; white-space: pre-wrap; margin-top: 5px; }
         .python-output { color: #e0e0e0; white-space: pre; font-family: monospace; }
         .python-error { color: #ff6347; white-space: pre-wrap; }
-        .ai-response { color: #66ff66; white-space: pre-wrap; margin-top: 5px; border-left: 2px solid #66ff66; padding-left: 10px;}
+        .ai-response { 
+            color: #99d9ea; 
+            white-space: pre-wrap; 
+            margin-top: 5px; 
+            border-left: 2px solid #99d9ea; 
+            padding-left: 10px;
+        }
 
         #command-input-line { display: flex; }
         #command-input { color: #ffffff; background: transparent; border: none; outline: none; flex-grow: 1; caret-color: #ff4500; }
@@ -266,166 +256,41 @@
         .secret-prompt { color: #ff4500; filter: blur(3px); transition: all 0.3s; }
         .secret-prompt:hover { filter: blur(0); }
 
-        /* --- KNOWLEDGE MAP UPDATED STYLES --- */
-        #search-view-container {
-            display: none;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-        }
-        #knowledge-map-display {
-            display: flex;
-            flex-direction: row; 
-            height: calc(100% - 50px);
-            width: 100%;
-            gap: 10px;
-        }
-
-        /* --- INFO PANEL (LEFT VIEW) --- */
-        #map-info-panel {
-            flex: 1; /* Takes 1/3 of space */
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        #info-content-container {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #ff4500;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        #info-content {
-             padding: 15px;
-             overflow-y: auto;
-             flex-grow: 1;
-        }
+        #search-view-container { display: none; flex-direction: column; width: 100%; height: 100%; }
+        #knowledge-map-display { display: flex; flex-direction: row; height: calc(100% - 50px); width: 100%; gap: 10px; }
+        #map-info-panel { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        #info-content-container { flex: 2; display: flex; flex-direction: column; border: 1px solid #ff4500; background: rgba(0, 0, 0, 0.2); border-radius: 8px; overflow: hidden; }
+        #info-content { padding: 15px; overflow-y: auto; flex-grow: 1; }
         #info-content::-webkit-scrollbar { width: 8px; }
         #info-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
         #info-content::-webkit-scrollbar-thumb { background: #ff4500; }
-        .info-title {
-            color: #ff4500;
-            font-weight: bold;
-            font-size: 1.2em;
-            border-bottom: 1px solid #ff4500;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-        }
-        .info-summary {
-            color: #e0e0e0;
-            font-size: 0.9em;
-            line-height: 1.6;
-            white-space: pre-wrap;
-        }
-        .info-summary .topic-link {
-            color: #ff8c00;
-            text-decoration: underline;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .info-summary .topic-link:hover {
-            color: #ffae42;
-        }
-        
-        #ai-analysis-container {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px dashed rgba(255, 69, 0, 0.3);
-        }
-        #ai-analysis-container .ai-response {
-            font-size: 0.9em;
-            margin-top: 10px;
-        }
-        
-        /* --- UPGRADED: IMAGE PANEL --- */
-        #image-panel {
-            flex: 1;
-            border: 1px solid #ff4500;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-        }
-        #image-panel img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 4px;
-        }
-        #image-panel .placeholder-text {
-            color: #888;
-            font-style: italic;
-        }
-        
-        /* --- RIGHT COLUMN (MAP AND GRID) --- */
-        #map-content-area {
-            flex: 2; /* Takes 2/3 of space */
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            min-width: 0;
-        }
-
-        /* --- NEURAL MAP (BIG VIEW) --- */
-        #neural-map-container {
-            flex: 3; 
-            min-height: 0;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #ff4500;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-        }
-        #neural-map-container .label {
-            color: #fff;
-            font-family: "JetBrains Mono", monospace;
-            font-size: 14px;
-            background: rgba(0,0,0,0.7);
-            padding: 2px 5px;
-            border-radius: 3px;
-            text-shadow: 0 0 5px #000;
-            pointer-events: auto;
-            cursor: pointer;
-            transition: color 0.3s, text-shadow 0.3s, opacity 0.3s;
-        }
-        /* MODIFIED: Changed highlight color to orange */
-        #neural-map-container .label.highlight {
-            color: #ffae42;
-            text-shadow: 0 0 8px #ffae42;
-        }
-        
-        /* --- GRID CONTAINER (SMALL VIEW) --- */
-        #map-grid-container {
-            flex: 1;
-            overflow-y: auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 10px;
-            align-content: start;
-            padding: 10px;
-            border: 1px solid rgba(255, 69, 0, 0.2);
-            border-radius: 8px;
-        }
+        .info-title { color: #ff4500; font-weight: bold; font-size: 1.2em; border-bottom: 1px solid #ff4500; padding-bottom: 5px; margin-bottom: 10px; }
+        .info-summary { color: #e0e0e0; font-size: 0.9em; line-height: 1.6; white-space: pre-wrap; }
+        .info-summary .topic-link { color: #ff8c00; text-decoration: underline; cursor: pointer; font-weight: bold; }
+        .info-summary .topic-link:hover { color: #ffae42; }
+        #ai-analysis-container { margin-top: 15px; padding-top: 10px; border-top: 1px dashed rgba(255, 69, 0, 0.3); }
+        #ai-analysis-container .ai-response { font-size: 0.9em; margin-top: 10px; }
+        #image-panel { flex: 1; border: 1px solid #ff4500; background: rgba(0, 0, 0, 0.2); border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 10px; }
+        #image-panel img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
+        #image-panel .placeholder-text { color: #888; font-style: italic; }
+        #map-content-area { flex: 2; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+        #neural-map-container { flex: 3; min-height: 0; height: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid #ff4500; border-radius: 8px; overflow: hidden; position: relative; }
+        #neural-map-container .label { color: #fff; font-family: "JetBrains Mono", monospace; font-size: 14px; background: rgba(0,0,0,0.7); padding: 2px 5px; border-radius: 3px; text-shadow: 0 0 5px #000; pointer-events: auto; cursor: pointer; transition: color 0.3s, text-shadow 0.3s, opacity 0.3s; }
+        #neural-map-container .label.highlight { color: #ffae42; text-shadow: 0 0 8px #ffae42; }
+        #map-grid-container { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; align-content: start; padding: 10px; border: 1px solid rgba(255, 69, 0, 0.2); border-radius: 8px; }
         #map-grid-container::-webkit-scrollbar { width: 8px; }
         #map-grid-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
         #map-grid-container::-webkit-scrollbar-thumb { background: #ff4500; }
         
-        /* --- UPGRADED: Suggestion Buttons --- */
         .map-node-retro {
             color: #e0e0e0;
-            background-color: rgba(255, 69, 0, 0.1);
-            border: 1px solid #ff4500;
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.1), rgba(255, 69, 0, 0.15));
+            border: 1px solid rgba(255, 69, 0, 0.2);
             padding: 12px;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-size: 0.95em;
-            line-height: 1.4;
+            font-size: 0.9em;
+            line-height: 1.3;
             overflow: hidden;
             text-align: center;
             border-radius: 4px;
@@ -434,8 +299,9 @@
         .map-node-retro:hover {
             background-color: rgba(255, 69, 0, 0.3);
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.3);
+            box-shadow: 0 0 12px rgba(255, 69, 0, 0.4);
             color: #ffffff;
+            border-color: rgba(255, 107, 38, 0.8);
         }
         .map-node-retro.active-node {
             background-color: #ff4500;
@@ -451,49 +317,20 @@
             z-index: 10;
             position: relative;
         }
-        .node-title { font-weight: bold; }
-        
-        #search-controls {
-            flex-shrink: 0;
-            height: 50px;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            font-size: 1em;
-            color: #c7c7c7;
-            border-top: 1px solid rgba(255, 69, 0, 0.2);
-        }
 
-        #knowledge-search-input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #ff4500;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-family: "JetBrains Mono", monospace;
-            width: 50%;
-            text-align: center;
-            flex-grow: 1;
-            max-width: 400px;
-        }
+        .node-title { font-weight: bold; }
+        #search-controls { flex-shrink: 0; height: 50px; padding-top: 5px; padding-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 1em; color: #c7c7c7; border-top: 1px solid rgba(255, 69, 0, 0.2); }
+        #knowledge-search-input { background: rgba(0, 0, 0, 0.3); border: 1px solid #ff4500; color: white; padding: 8px 12px; border-radius: 4px; font-family: "JetBrains Mono", monospace; width: 50%; text-align: center; flex-grow: 1; max-width: 400px; }
         #knowledge-search-input::placeholder { color: #888; }
-        #knowledge-search-input:focus {
-            outline: none;
-            box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
-            border-color: #ffae42;
-        }
+        #knowledge-search-input:focus { outline: none; box-shadow: 0 0 10px rgba(255, 69, 0, 0.5); border-color: #ffae42; }
         
-        /* --- UPGRADED: Navigation Buttons --- */
         .search-nav-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 69, 0, 0.2);
-            border: 1px solid #ff4500;
-            color: #e0e0e0;
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.15), rgba(255, 69, 0, 0.25));
+            border: 1px solid rgba(255, 69, 0, 0.4);
+            color: #ff8c66;
             text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
             padding: 8px 16px;
             border-radius: 4px;
@@ -504,10 +341,11 @@
             font-size: 1em;
         }
         .search-nav-btn:hover:not(:disabled), .search-nav-btn:focus {
-            background: rgba(255, 69, 0, 0.5);
+            background: linear-gradient(145deg, rgba(255, 69, 0, 0.4), rgba(255, 69, 0, 0.5));
             color: white;
             box-shadow: 0 0 12px rgba(255, 100, 0, 0.6);
             outline: none;
+            border-color: #ffae42;
         }
         .search-nav-btn:disabled {
             background: rgba(80, 80, 80, 0.2);
@@ -516,7 +354,7 @@
             cursor: not-allowed;
             text-shadow: none;
         }
-        
+
         @keyframes explosion-fade { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.5); } }
         @keyframes powerup-glow { from { opacity: 0.7; transform: scale(1); } to { opacity: 1; transform: scale(1.1); } }
         @keyframes screen-shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } 20%, 40%, 60%, 80% { transform: translateX(5px); } }
@@ -525,36 +363,25 @@
 
         @media (max-width: 1024px) {
             #knowledge-map-display { flex-direction: column; }
-            #map-content-area, #map-info-panel {
-                flex: 1; 
-            }
-            #image-panel {
-                min-height: 150px;
-            }
+            #map-content-area, #map-info-panel { flex: 1; }
+            #image-panel { min-height: 150px; }
         }
 
         @media (max-width: 768px) {
-            .main-container { padding-left: 20px; padding-top: 100px; flex-direction: column; }
-            .spiral-nav { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 50px; height: 50px; z-index: 2000; }
-            .nav-links { top: 20px; left: 50%; transform: translate(-50%, 0); width: 300px; height: 100px; z-index: 1999; }
-            .about-content { padding: 20px 10px; margin-top: 70px; }
-            .terminal-container { max-width: 95%; height: 75vh; max-height: 600px; }
+            .terminal-container { height: 85vh; }
             .terminal-intro-grid { flex-direction: column; gap: 10px; }
             .ascii-art-animation { font-size: 8px; align-self: center; }
             .terminal-body { font-size: 12px; }
             .retro-title { font-size: 12px; }
             .intro-text { font-size: 0.85em; }
-            .spiral-about { position: absolute; top: 50%; left: 80%; width: 40px; height: 40px; }
             #game-screen { font-size: 12px; }
             #game-stats { font-size: 12px; }
             #map-info-panel { flex: 0.5; max-height: 200px; }
         }
 
         @media (max-width: 480px) {
-            .terminal-container { height: 70vh; max-height: 500px; }
-            .spiral-nav { width: 40px; height: 40px; }
-            .nav-links { width: 250px; height: 80px; }
-            .nav-link { font-size: 0.8em; padding: 6px 12px; }
+            .terminal-container { height: 80vh; }
+            #header-buttons { display: none; } /* Hide buttons on very small screens to avoid clutter */
         }
     </style>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
@@ -562,30 +389,21 @@
 
 <body>
     <div class="main-container">
-        <div class="spiral-nav" id="spiralContainer">
-             <svg class="spiral" viewBox="-50 -50 100 100">
-                <path id="spiral" fill="none" stroke="#ff4500" stroke-width="2"></path>
-            </svg>
-            <div class="nav-links" id="navLinks">
-                <a href="spiral.html" class="nav-link" style="top: 20%; left: 80%;">Home</a>
-                <div class="spiral-about" id="aboutSpiral" style="top: 50%; left: 80%;">
-                    <svg class="spiral" viewBox="-50 -50 100 100">
-                        <path id="aboutSpiralPath" fill="none" stroke="#ff4500" stroke-width="2"></path>
-                    </svg>
-                </div>
-                <a href="#" class="nav-link" style="top: 80%; left: 80%;">Github</a>
-            </div>
-        </div>
-
         <div class="about-content show-content" id="aboutContent">
             <div class="terminal-container" id="terminalContainer">
                 <div class="terminal-header">
-                    <div id="header-logo-container">
+                    <a href="spiral.html" id="header-spiral-link">
                         <svg class="spiral" viewBox="-50 -50 100 100">
                             <path id="headerSpiralPath" fill="none" stroke="#ff4500" stroke-width="4"></path>
                         </svg>
-                    </div>
+                    </a>
+                    
                     <div class="terminal-title" id="terminal-title">CAMEOSKY@arch-terminal</div>
+                    
+                    <div id="header-buttons">
+                        <a href="spiral.html" class="header-btn">Home</a>
+                        <a href="#" id="compiler-btn" class="header-btn">Compiler</a>
+                    </div>
                 </div>
 
                 <div class="terminal-body" id="terminalBody">
@@ -673,6 +491,9 @@
           appId: "1:179377879369:web:071a8725d93163691f0298",
           measurementId: "G-RHKB6D9XQL"
         };
+        
+        // [FIX 1] Add the provided API Key for all AI functionality
+        const GEMINI_API_KEY = "AIzaSyDzWUuJGlrnm2PJ7RQuXhxvfmgJDXKGf1M";
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -688,19 +509,18 @@
             const terminalBody = document.getElementById('terminalBody');
             const terminalContent = document.getElementById('terminal-content');
             const gameContainer = document.getElementById('game-container');
-            const spiralContainer = document.getElementById('spiralContainer');
-            const navLinks = document.getElementById('navLinks');
             const terminalTitle = document.getElementById('terminal-title');
             const terminalPrompt = document.getElementById('terminal-prompt');
             const searchViewContainer = document.getElementById('search-view-container');
             const mapGridContainer = document.getElementById('map-grid-container');
-            const mapInfoPanel = document.getElementById('map-info-panel');
             const infoContent = document.getElementById('info-content');
             const imagePanel = document.getElementById('image-panel');
             const searchBackBtn = document.getElementById('search-back-btn');
             const searchForwardBtn = document.getElementById('search-forward-btn');
             const knowledgeSearchInput = document.getElementById('knowledge-search-input');
             const neuralMapContainer = document.getElementById('neural-map-container');
+            const compilerBtn = document.getElementById('compiler-btn');
+            const headerButtons = document.getElementById('header-buttons');
 
 
             // --- STATE VARIABLES ---
@@ -775,27 +595,19 @@
             document.body.addEventListener('click', audio.init, { once: true });
             document.body.addEventListener('keydown', audio.init, { once: true });
 
-            // --- SPIRAL NAVIGATION LOGIC ---
-            spiralContainer.addEventListener('mouseenter', () => navLinks.classList.add('show-links'));
-            spiralContainer.addEventListener('mouseleave', () => navLinks.classList.remove('show-links'));
-
+            // --- SPIRAL PATH GENERATION ---
             function generateSpiralPaths() {
-                 const spirals = [
-                    document.getElementById('spiral'), 
-                    document.getElementById('aboutSpiralPath'),
-                    document.getElementById('headerSpiralPath')
-                ];
-                spirals.forEach(spiralPath => {
-                    if (!spiralPath) return;
-                    let path = 'M 40 0';
-                    const turns = 6; const points = 200;
-                    for (let i = 0; i <= points; i++) {
-                        const t = (i / points) * turns * Math.PI * 2;
-                        const r = 40 * (1 - (i / points) * 0.9);
-                        path += ` L ${(r * Math.cos(t)).toFixed(2)} ${(r * Math.sin(t)).toFixed(2)}`;
-                    }
-                    spiralPath.setAttribute('d', path);
-                });
+                const spiralPath = document.getElementById('headerSpiralPath');
+                if (!spiralPath) return;
+                
+                let path = 'M 40 0';
+                const turns = 6; const points = 200;
+                for (let i = 0; i <= points; i++) {
+                    const t = (i / points) * turns * Math.PI * 2;
+                    const r = 40 * (1 - (i / points) * 0.9);
+                    path += ` L ${(r * Math.cos(t)).toFixed(2)} ${(r * Math.sin(t)).toFixed(2)}`;
+                }
+                spiralPath.setAttribute('d', path);
             }
 
             // --- ASCII BINARY FLOW ANIMATION (Reused for Mascot) ---
@@ -847,20 +659,24 @@
                 animate();
             }
             
-            // --- PYTHON INTEGRATION (PYODIDE) - NON-BLOCKING ---
+            // [FIX 2] PYTHON INTEGRATION (PYODIDE) - NON-BLOCKING
             function initializePyodide() {
-                printOutput("Initializing Python runtime in the background...", null);
+                const loadingMessage = printOutput("Initializing Python runtime in the background... The terminal remains active.", null);
+                
+                // Use setTimeout to run this asynchronously, preventing it from blocking the main thread.
                 setTimeout(async () => {
                     try {
                         pyodide = await loadPyodide();
                         pyodideReady = true;
-                        printOutput("Python runtime ready. Type 'python' to enter the REPL.", true);
+                        loadingMessage.innerHTML = "Python runtime ready. Type 'python' to enter the REPL.";
+                        loadingMessage.classList.add('auth-success');
                     } catch (error) {
                         pyodideReady = false;
-                        printOutput("Error loading Python runtime. Python features will be unavailable.", false);
+                        loadingMessage.innerHTML = "Error loading Python runtime. Python features will be unavailable.";
+                        loadingMessage.classList.add('auth-error');
                         console.error("Pyodide loading error:", error);
                     }
-                }, 100);
+                }, 100); // A short delay is enough to unblock the UI.
             }
 
             async function runPythonCode(code) {
@@ -1174,9 +990,23 @@
             
             // --- UI STATE UPDATER ---
             function updateChatUI(isChatting) {
+                // [FIX 3] Handle Python Mode UI changes, including the exit button
+                const existingExitBtn = document.getElementById('python-exit-btn');
+                if (existingExitBtn) {
+                    existingExitBtn.remove();
+                }
+
                 if (inPythonMode) {
                     terminalTitle.textContent = 'Python REPL';
                     terminalPrompt.textContent = pythonCodeBlock ? '... ' : '>>> ';
+                    // Add the exit button
+                    const exitBtn = document.createElement('button');
+                    exitBtn.id = 'python-exit-btn';
+                    exitBtn.className = 'header-btn';
+                    exitBtn.textContent = 'Exit Python';
+                    exitBtn.style.borderColor = '#ff6347'; // Make it stand out
+                    exitBtn.addEventListener('click', () => handlePythonInput('exit()'));
+                    headerButtons.appendChild(exitBtn);
                 } else if (inAIMode) {
                     terminalTitle.textContent = 'CAMEOSKY / AI Assistant';
                     terminalPrompt.innerHTML = '<span>cameosky@ /ask/&nbsp;</span>';
@@ -1360,7 +1190,6 @@
                 runScene();
             }
 
-           // --- 3D NEURAL MAP (UPGRADED) ---
             const NeuralMap = {
                 scene: null, camera: null, renderer: null, labelRenderer: null, controls: null, raycaster: null, mouse: null,
                 graph: { nodes: [], edges: [] },
@@ -1413,25 +1242,15 @@
                     this.isInitialized = true;
                 },
 
-                // FIXED: This function now correctly updates line resolutions and handles cases where the container size is 0.
                 onResize() {
                     if (!this.isInitialized || !neuralMapContainer.clientWidth) return;
-
                     const width = neuralMapContainer.clientWidth;
                     const height = neuralMapContainer.clientHeight;
-
-                    // If the container isn't rendered yet, its size will be 0. Prevent errors by returning early.
-                    if (width === 0 || height === 0) {
-                        return;
-                    }
-
+                    if (width === 0 || height === 0) { return; }
                     this.camera.aspect = width / height;
                     this.camera.updateProjectionMatrix();
-
                     this.renderer.setSize(width, height);
                     this.labelRenderer.setSize(width, height);
-
-                    // This is the crucial fix for resizing. It updates all existing lines.
                     this.threeObjects.lines.forEach(line => {
                         if (line.material) {
                             line.material.resolution.set(width, height);
@@ -1439,20 +1258,20 @@
                     });
                 },
 
-                // FIXED: This function now uses requestAnimationFrame to ensure onResize is called after the DOM is updated.
                 show() {
                     neuralMapContainer.style.display = 'block';
-                    // Defer the resize call to the next frame to ensure the browser has
-                    // calculated the container's dimensions after it becomes visible. This prevents lines from rendering with a size of 0.
-                    requestAnimationFrame(() => {
-                        this.onResize();
-                    });
+                    requestAnimationFrame(() => { this.onResize(); });
                 },
                 hide() { neuralMapContainer.style.display = 'none'; },
                 
                 clearGraph() {
                     this.graph = { nodes: [], edges: [] };
-                    this.threeObjects.nodes.forEach(obj => this.scene.remove(obj.mesh));
+                    this.threeObjects.nodes.forEach(obj => {
+                        if (obj.label && obj.label.element && obj.label.element.parentNode) {
+                            obj.label.element.parentNode.removeChild(obj.label.element);
+                        }
+                        this.scene.remove(obj.mesh);
+                    });
                     this.threeObjects.lines.forEach(obj => this.scene.remove(obj));
                     this.threeObjects = { nodes: new Map(), lines: new Map() };
                 },
@@ -1474,54 +1293,55 @@
                 },
 
                 addNode(nodeData) {
+                    const existingNode = this.graph.nodes.find(n => n.id === nodeData.id);
+                    if (existingNode) return; // Don't add duplicate nodes
+
                     const newNode = {
                         id: nodeData.id,
                         label: nodeData.label,
                         summary: nodeData.summary,
                         position: new THREE.Vector3((Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20),
                         velocity: new THREE.Vector3(),
-                        mass: nodeData.isRelationship ? 1.0 : 1.5,
-                        isRelationship: !!nodeData.isRelationship
+                        mass: 1.5,
                     };
                     this.graph.nodes.push(newNode);
                     this.createNodeObject(newNode);
                 },
-
+                
+                // [FIX 4] This is the core logic for creating links between related terms.
                 async findCrossLinks(newNodeData) {
-                    const existingNodes = this.graph.nodes.filter(n => n.id !== newNodeData.id && !n.isRelationship);
+                    const existingNodes = this.graph.nodes.filter(n => n.id !== newNodeData.id);
+                    if (existingNodes.length === 0) return;
+
+                    const thinkingMsg = printOutput(`Analyzing relationships for "${newNodeData.label}"...`, null);
+
                     for (const oldNode of existingNodes) {
-                        const commonCategory = await KnowledgeMap.getCommonCategory(oldNode.id, newNodeData.id);
+                        const commonCategory = await KnowledgeMap.getCommonCategory(oldNode.label, newNodeData.label);
                         if (commonCategory) {
-                            const relationId = `relation-${oldNode.id}-${newNodeData.id}`;
-                            if (this.graph.nodes.some(n => n.id === relationId)) continue;
+                            // Create a direct edge (line) between the two related nodes.
+                            const edgeId = `edge-${oldNode.id}-${newNodeData.id}`;
+                            this.addEdge({ id: edgeId, from: oldNode.id, to: newNodeData.id, label: commonCategory });
                             
-                            const relationNodeData = {
-                                id: relationId,
-                                label: commonCategory,
-                                summary: `AI-generated relationship: ${oldNode.label} and ${newNodeData.label} are related because: '${commonCategory}'.`,
-                                isRelationship: true
-                            };
-                            
-                            this.addNode(relationNodeData);
-                            this.addEdge({ id: `${oldNode.id}__${relationId}`, from: oldNode.id, to: relationId });
-                            this.addEdge({ id: `${newNodeData.id}__${relationId}`, from: newNodeData.id, to: relationId });
+                            printOutput(`Found link: "${oldNode.label}" ↔ "${newNodeData.label}" (Relation: ${commonCategory})`, true);
                         }
+                    }
+                    if (thinkingMsg && thinkingMsg.parentNode) {
+                        thinkingMsg.parentNode.removeChild(thinkingMsg);
                     }
                 },
                 
                 addEdge(edgeData) {
-                    const reverseEdgeId = `${edgeData.to}__${edgeData.from}`;
+                    const reverseEdgeId = `edge-${edgeData.to}-${edgeData.from}`;
                     if (this.graph.edges.some(e => e.id === edgeData.id || e.id === reverseEdgeId)) return;
                     this.graph.edges.push(edgeData);
                     this.createEdgeObject(edgeData);
                 },
 
                 createNodeObject(node) {
-                     const isRelationship = node.isRelationship;
-                     const geometry = new THREE.SphereGeometry(isRelationship ? 0.4 : 0.6, 20, 20);
+                     const geometry = new THREE.SphereGeometry(0.6, 20, 20);
                      const material = new THREE.MeshPhongMaterial({ 
-                         color: isRelationship ? 0x00ff00 : 0xff4500, // Green for relationships
-                         emissive: isRelationship ? 0x00cc00 : 0xff4500, 
+                         color: 0xff4500,
+                         emissive: 0xff4500, 
                          emissiveIntensity: 0.4,
                          transparent: true,
                          opacity: 0.9
@@ -1533,12 +1353,10 @@
                      const labelDiv = document.createElement('div');
                      labelDiv.className = 'label';
                      labelDiv.textContent = node.label;
-                     labelDiv.style.color = isRelationship ? '#aaffaa' : '#ffffff';
-                     if (!isRelationship) {
-                        labelDiv.addEventListener('click', () => KnowledgeMap.init(node.id));
-                     }
+                     labelDiv.addEventListener('click', () => KnowledgeMap.init(node.id));
+                     
                      const label = new CSS2DObject(labelDiv);
-                     label.position.set(0, isRelationship ? 0.7 : 0.9, 0);
+                     label.position.set(0, 0.9, 0);
                      sphere.add(label);
 
                      this.scene.add(sphere);
@@ -1554,13 +1372,13 @@
                     const lineGeo = new LineGeometry();
                     lineGeo.setPositions(positions);
 
-                    const lineMat = new LineMaterial({ color: 0xffffff, linewidth: 2, transparent: true, opacity: 0.4 });
+                    const lineMat = new LineMaterial({ color: 0x00ff00, linewidth: 2, transparent: true, opacity: 0.5, vertexColors: false });
                     lineMat.resolution.set(neuralMapContainer.clientWidth, neuralMapContainer.clientHeight);
                     
                     const line = new Line2(lineGeo, lineMat);
                     line.computeLineDistances();
                     line.scale.set(1, 1, 1);
-                    line.userData = { id: edge.id, type: 'edge', from: edge.from, to: edge.to };
+                    line.userData = { id: edge.id, type: 'edge', from: edge.from, to: edge.to, label: edge.label };
 
                     this.scene.add(line);
                     this.threeObjects.lines.set(edge.id, line);
@@ -1640,7 +1458,7 @@
                     this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
                     this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
                     this.raycaster.setFromCamera(this.mouse, this.camera);
-                    this.raycaster.params.Line.threshold = 0.5; // Sensitivity for line intersection
+                    this.raycaster.params.Line.threshold = 0.5;
 
                     const nodeMeshes = Array.from(this.threeObjects.nodes.values()).map(n => n.mesh);
                     const lineMeshes = Array.from(this.threeObjects.lines.values());
@@ -1666,7 +1484,7 @@
                     event.preventDefault();
                     if (this.hoveredElement && this.hoveredElement.type === 'node') {
                         const node = this.graph.nodes.find(n => n.id === this.hoveredElement.id);
-                        if (node && !node.isRelationship) {
+                        if (node) {
                            KnowledgeMap.init(this.hoveredElement.id);
                         }
                     }
@@ -1681,7 +1499,8 @@
                     const DULL_OPACITY_NODE = 0.15;
                     const DULL_OPACITY_LINE = 0.05;
                     const NORMAL_OPACITY_NODE = 0.9;
-                    const NORMAL_OPACITY_LINE = 0.4;
+                    const NORMAL_OPACITY_LINE = 0.5;
+                    const LINE_HIGHLIGHT_COLOR = 0xffffff;
 
                     if (isAnythingHovered) {
                         if (this.hoveredElement.type === 'node') {
@@ -1707,27 +1526,18 @@
 
                     this.threeObjects.nodes.forEach((nodeObj, nodeId) => {
                         const isHighlighted = highlightedNodes.has(nodeId);
-                        const node = this.graph.nodes.find(n => n.id === nodeId);
-                        if (!node) return;
-                        const isRelationship = node.isRelationship;
-
-                        nodeObj.material.emissive.setHex(isHighlighted ? GLOW_COLOR : (isRelationship ? 0x00cc00 : 0xff4500));
+                        nodeObj.material.emissive.setHex(isHighlighted ? GLOW_COLOR : 0xff4500);
                         nodeObj.material.emissiveIntensity = isHighlighted ? 1.5 : 0.4;
-                        
                         nodeObj.material.opacity = isAnythingHovered && !isHighlighted ? DULL_OPACITY_NODE : NORMAL_OPACITY_NODE;
-                        
                         nodeObj.mesh.userData.targetScale = isHighlighted ? 1.4 : 1.0;
-
                         nodeObj.label.element.style.opacity = isAnythingHovered && !isHighlighted ? DULL_OPACITY_NODE : 1.0;
                         nodeObj.label.element.classList.toggle('highlight', isHighlighted);
                     });
 
                     this.threeObjects.lines.forEach((lineObj, lineId) => {
                         const isHighlighted = highlightedEdges.has(lineId);
-                        
-                        lineObj.material.color.set(isHighlighted ? GLOW_COLOR : 0xffffff);
-
-                        lineObj.material.opacity = isAnythingHovered && !isHighlighted ? DULL_OPACITY_LINE : NORMAL_OPACITY_LINE;
+                        lineObj.material.color.set(isHighlighted ? LINE_HIGHLIGHT_COLOR : 0x00ff00);
+                        lineObj.material.opacity = isAnythingHovered && !isHighlighted ? DULL_OPACITY_LINE : (isHighlighted ? 0.9 : NORMAL_OPACITY_LINE);
                     });
                 },
                 
@@ -1765,7 +1575,6 @@
                 }
             };
             
-            // --- KNOWLEDGE MAP (UPGRADED) ---
             const KnowledgeMap = {
                 allFetchedNodes: new Map(),
                 container: mapGridContainer,
@@ -1889,17 +1698,17 @@
                         } else { imagePanel.innerHTML = `<span class="placeholder-text">No image for this topic.</span>`; }
                     } catch (e) { console.error("Image fetch error:", e); imagePanel.innerHTML = `<span class="placeholder-text">Image search failed.</span>`; }
                 },
-
+                
+                // This function now uses the API key and will work correctly.
                 async getCommonCategory(term1, term2) {
-                    const prompt = `In a single, very short sentence (under 7 words), what is the relationship between "${term1}" and "${term2}"? If there is no direct or obvious relationship, just respond with "None".`;
-                    const apiKey = ""; 
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    if (!GEMINI_API_KEY) {
+                        console.error("Gemini API key is missing.");
+                        return null;
+                    }
+                    const prompt = `In a single, very short phrase (under 7 words), what is the relationship between "${term1}" and "${term2}"? Examples: 'Both are fruits', 'A type of vehicle', 'Related to computing'. If there is no direct or obvious relationship, just respond with "None".`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
                     
-                    const payload = {
-                        contents: [{
-                            parts: [{ text: prompt }]
-                        }]
-                    };
+                    const payload = { contents: [{ parts: [{ text: prompt }] }] };
 
                     try {
                         const response = await fetch(apiUrl, {
@@ -1909,29 +1718,21 @@
                         });
 
                         if (!response.ok) {
-                            console.error("AI API call failed with status:", response.status);
+                            const errorBody = await response.text();
+                            console.error(`AI API call failed with status: ${response.status} ${response.statusText}`, errorBody);
                             return null;
                         }
 
                         const result = await response.json();
                         
-                        if (result.candidates && result.candidates.length > 0 &&
-                            result.candidates[0].content && result.candidates[0].content.parts &&
-                            result.candidates[0].content.parts.length > 0) {
-                            
-                            let text = result.candidates[0].content.parts[0].text.trim();
-                            
-                            text = text.replace(/["']/g, '');
-                            if (text.endsWith('.')) {
-                                text = text.slice(0, -1);
-                            }
-
+                        if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                            let text = result.candidates[0].content.parts[0].text.trim().replace(/["'.]/g, '');
                             if (text.toLowerCase() !== 'none' && text.length > 0) {
                                 return text;
                             }
                         }
                     } catch (error) {
-                        console.error("Error calling Gemini API:", error);
+                        console.error("Error calling Gemini API for relationship:", error);
                         return null;
                     }
                     
@@ -1955,28 +1756,43 @@
                         </div>
                     `;
                     
+                    // This function now uses the API key and will work correctly.
                     document.getElementById('ai-analyze-btn').addEventListener('click', async () => {
+                        if (!GEMINI_API_KEY) {
+                            printOutput("AI functionality requires an API key.", false);
+                            return;
+                        }
                         const btn = document.getElementById('ai-analyze-btn');
                         const analysisContainer = document.getElementById('ai-analysis-container');
                         btn.disabled = true;
                         btn.textContent = 'Analyzing...';
                         
-                        await new Promise(resolve => setTimeout(resolve, 1500)); 
-                        
-                        const summaryPoints = node.summary
-                            .split('\n\n')[0]
-                            .split('. ')
-                            .filter(s => s.length > 20)
-                            .slice(0, 3)
-                            .map(s => `<li>${s.trim()}.</li>`).join('');
+                        const prompt = `Summarize the following text about "${node.label}" into a few key bullet points. Be concise. Text: ${node.summary}`;
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+                        const payload = { contents: [{ parts: [{ text: prompt }] }] };
 
-                        const aiResponseHTML = `
-                            <div class="info-title" style="font-size: 1.1em; margin-top: 15px;">AI Analysis</div>
-                            <ul class="ai-response" style="padding-left: 20px; margin-top: 5px;">
-                                ${summaryPoints || "<li>Could not generate a summary from the provided text.</li>"}
-                            </ul>`;
-
-                        analysisContainer.innerHTML = aiResponseHTML;
+                        try {
+                             const response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                             if (!response.ok) throw new Error(`API call failed: ${response.status}`);
+                             const result = await response.json();
+                             if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                                let text = result.candidates[0].content.parts[0].text;
+                                text = text.replace(/\*/g, '<li>').replace(/$/gm, '</li>');
+                                const aiResponseHTML = `
+                                    <div class="info-title" style="font-size: 1.1em; margin-top: 15px;">AI Analysis</div>
+                                    <ul class="ai-response" style="padding-left: 20px; margin-top: 5px;">${text}</ul>`;
+                                analysisContainer.innerHTML = aiResponseHTML;
+                             } else {
+                                throw new Error("No content in AI response.");
+                             }
+                        } catch(e) {
+                            analysisContainer.innerHTML = `<div class="python-error">AI analysis failed. ${e.message}</div>`;
+                            console.error("AI Analysis Error:", e);
+                        }
                     });
 
                     this.infoPanel.scrollTop = 0;
@@ -1997,6 +1813,19 @@
             
 
             // --- GLOBAL EVENT LISTENERS ---
+            compilerBtn.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                if (inGame || inSearchMode) return; 
+
+                commandInput.value = 'python';
+                const enterEvent = new KeyboardEvent('keydown', {
+                    key: 'Enter',
+                    bubbles: true,
+                    cancelable: true,
+                });
+                commandInput.dispatchEvent(enterEvent);
+            });
+
             document.addEventListener('keydown', (e) => {
                 if (inGame) {
                     const key = e.key.toLowerCase(); if (key === 'q') { Game.endGame(); return; } if (key === 'b') { Game.useBomb(); return; }
@@ -2071,9 +1900,10 @@
                     case 'play': showAnimatedIntro(); break;
                     case 'exit': outputElement.textContent = `This command is used to exit specific modes like chat or the game.`; audio.error(); break;
                     case 'python':
-                        if (pyodideReady) { inPythonMode = true; updateChatUI(); outputElement.innerHTML = `Entered Python REPL. Type your Python code. Multi-line statements are supported. Type 'exit()' to leave.`; } 
+                        if (pyodideReady) { inPythonMode = true; updateChatUI(); outputElement.innerHTML = `Entered Python REPL. Type your Python code. Multi-line statements are supported. Type 'exit()' or use the button to leave.`; } 
                         else { outputElement.innerHTML = `Python runtime is still loading or failed to load. Please wait.`; audio.error(); } break;
                     case 'ask':
+                        if (!GEMINI_API_KEY) { outputElement.textContent = "AI functionality is disabled. An API key is required."; audio.error(); break; }
                         inAIMode = true; updateChatUI();
                         outputElement.innerHTML = `Entered AI chat mode. I'm listening.<br>Type 'quit' to exit this mode.`;
                         if (query) { getAiResponse(query); } break;
@@ -2119,17 +1949,88 @@
                     inSearchMode = false; updateChatUI(); searchViewContainer.style.display = 'none'; 
                     terminalContent.style.display = 'block'; NeuralMap.hide(); commandInput.focus();
                     printOutput("Exited Knowledge Nexus.", true);
-                    // Clear the graph for the next session
                     NeuralMap.clearGraph();
                     KnowledgeMap.allFetchedNodes.clear();
                 }
             }
-            function handleAIChatInput(command) { if (command.toLowerCase() === 'quit') { inAIMode = false; updateChatUI(); printOutput("Exited AI chat mode.", true); return; } if(command) getAiResponse(command); }
+            
+            async function getAiResponse(query) {
+                if (!GEMINI_API_KEY) {
+                    printOutput("Cannot connect to AI service: API key is missing.", false);
+                    return;
+                }
+                const thinkingLine = document.createElement('div');
+                thinkingLine.className = 'output ai-response';
+                thinkingLine.innerHTML = '🧠 Thinking...';
+                historyContainer.appendChild(thinkingLine);
+                terminalBody.scrollTop = terminalBody.scrollHeight;
+
+                const prompt = `You are a helpful assistant running inside a retro terminal interface. Provide a concise and informative answer to the following user question: "${query}"`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+
+                const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorBody = await response.json();
+                        console.error("AI API Error:", errorBody);
+                        throw new Error(`AI API call failed with status: ${response.status}. Check console for details.`);
+                    }
+
+                    const result = await response.json();
+                    let text = "Sorry, I couldn't generate a response.";
+                    if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                        text = result.candidates[0].content.parts[0].text;
+                    }
+                    thinkingLine.innerHTML = text; // Replace "Thinking..." with the response
+
+                } catch (error) {
+                    console.error("Error calling Gemini API:", error);
+                    thinkingLine.innerHTML = `Error connecting to AI service: ${error.message}`;
+                    thinkingLine.classList.remove('ai-response');
+                    thinkingLine.classList.add('python-error');
+                }
+            }
+
+            function handleAIChatInput(command) { 
+                if (command.toLowerCase() === 'quit') { 
+                    inAIMode = false; 
+                    updateChatUI(); 
+                    printOutput("Exited AI chat mode.", true); 
+                    return; 
+                } 
+                if(command) getAiResponse(command); 
+            }
+
             function handlePythonInput(command) {
-                if (command === 'exit()' || command === 'quit()') { inPythonMode = false; pythonCodeBlock = ''; updateChatUI(); printOutput("Exited Python REPL.", null); return; }
+                if (command === 'exit()' || command === 'quit()') { 
+                    inPythonMode = false; 
+                    pythonCodeBlock = ''; 
+                    updateChatUI(); 
+                    printOutput("Exited Python REPL.", null); 
+                    return; 
+                }
                 pythonCodeBlock += command + '\n';
-                if (command.trim().endsWith(':') || command.trim().endsWith('(') || command.trim().endsWith('[') || command.trim().endsWith('{') || (pythonCodeBlock && command.trim() !== '')) { updateChatUI(); } 
-                else { runPythonCode(pythonCodeBlock); pythonCodeBlock = ''; updateChatUI(); }
+                // Check if the code block is likely complete
+                try {
+                    // A simple check: if it's not an indented block, try to run it.
+                    // This is a heuristic and might not cover all cases.
+                    if (!command.startsWith(' ') && !command.startsWith('\t') && pythonCodeBlock.trim()) {
+                         runPythonCode(pythonCodeBlock); 
+                         pythonCodeBlock = ''; 
+                    }
+                } catch (e) {
+                    // This might be a syntax error for an incomplete block, which is expected.
+                    // We just continue to the next line.
+                } finally {
+                    updateChatUI();
+                }
             }
             function handleAuthFlow(input) {
                 switch(authState.step) {
@@ -2143,19 +2044,23 @@
             function resetAuthState() { authState.inProgress = false; authState.mode = null; authState.step = 0; authState.email = ''; authState.password = ''; }
             function handleChatCommand(command) { if (command.toLowerCase() === 'exit') { ShadowNetwork.exitChat(); return; } ShadowNetwork.sendMessage(command); }
             function printOutput(text, isSuccess, customClass = 'output') {
-                const outputElement = document.createElement('div'); outputElement.className = customClass;
+                const outputElement = document.createElement('div');
+                outputElement.className = customClass;
                 outputElement.innerHTML = text;
                 if (isSuccess === true) { outputElement.classList.add('auth-success'); } else if (isSuccess === false) { outputElement.classList.add('auth-error'); }
-                historyContainer.appendChild(outputElement); terminalBody.scrollTop = terminalBody.scrollHeight;
+                historyContainer.appendChild(outputElement); 
+                terminalBody.scrollTop = terminalBody.scrollHeight;
+                return outputElement; // Return the element so it can be modified later if needed
             }
 
             // --- INITIALIZATION ---
             generateSpiralPaths();
             runAsciiAnimation(document.getElementById('ascii-animation-container'), false);
-            initializePyodide();
+            initializePyodide(); // This is now non-blocking
             commandInput.focus();
         });
     </script>
 </body>
 </html>
+
 
